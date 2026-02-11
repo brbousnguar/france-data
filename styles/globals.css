@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Color Palette Variables */
+:root {
+  --charcoal-brown: #313628;
+  --charcoal: #595358;
+  --grey-olive: #857f74;
+  --ash-grey: #a4ac96;
+  --tea-green: #cadf9e;
+  
+  /* Lighter variants for backgrounds */
+  --tea-green-light: #e5f2d3;
+  --ash-grey-light: #d9dfd0;
+}
+
+html, body, #__next {
+  height: 100%;
+}
+
+body {
+  background-color: var(--ash-grey-light);
+  color: var(--charcoal-brown);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+.container-max {
+  max-width: 1100px;
+}
+
+/* Card styles with new color palette */
+.card {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(49, 54, 40, 0.1);
+  border: 1px solid var(--ash-grey);
+  padding: 1.5rem;
+}
+
+/* Typography consistency with new colors */
+h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--charcoal-brown);
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--charcoal-brown);
+}
+
+h3 {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--charcoal);
+}
+
+/* Animation for smooth transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
