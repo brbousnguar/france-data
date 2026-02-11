@@ -1,1 +1,82 @@
-node_modules
+# Dependenciesnode_modules
+
+node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Next.js
+/.next/
+/out/
+.next/
+.next/**
+.next/cache/
+.next/cache/**
+
+# Production
+/build
+dist/
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Local env files
+.env*.local
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Backup files
+*.bak
+*.backup
+*.old
+*~
+.backup/
+
+# Documentation backups (keep main README only)
+README.old.md
+README_OLD.md
+*_OLD.md
+*.old.md
+QUICK_START.md
+NANTES_PAGE.md
+UI_UX_POLISH.md
+DATA_LAYER.md
+API.md

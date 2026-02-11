@@ -1,7 +1,0 @@
-{
-  "/(dashboard)/nantes-10-years/page": "app/(dashboard)/nantes-10-years/page.js",
-  "/api-docs/page": "app/api-docs/page.js",
-  "/(dashboard)/cost-of-life/page": "app/(dashboard)/cost-of-life/page.js",
-  "/page": "app/page.js",
-  "/api/v1/population/[codeCommune]/route": "app/api/v1/population/[codeCommune]/route.js"
-}
