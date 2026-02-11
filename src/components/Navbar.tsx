@@ -17,6 +17,16 @@ export default function Navbar() {
         </Link>
         <nav className="flex items-center space-x-1">
           <Link 
+            href="/france-10-years" 
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              isActive('/france-10-years')
+                ? 'bg-white text-[#0055A4] rounded'
+                : 'text-white hover:text-[#F7B500]'
+            }`}
+          >
+            France in 10 years
+          </Link>
+          <Link 
             href="/nantes-10-years" 
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               isActive('/nantes-10-years')
