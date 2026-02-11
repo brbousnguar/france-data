@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import PageHeader from '../../../components/PageHeader'
 import StatCard from '../../../components/StatCard'
+import Breadcrumbs from '../../../components/Breadcrumbs'
 import PopulationLineChart from '../../../components/charts/PopulationLineChart'
 import AgeGroupsStackedChart from '../../../components/charts/AgeGroupsStackedChart'
 import ErrorState from '../../../components/ErrorState'
@@ -71,6 +72,11 @@ export default function Nantes10YearsPage() {
   if (loading) {
     return (
       <div className="animate-fadeIn">
+        <Breadcrumbs 
+          items={[
+            { label: 'Nantes en 10 ans' }
+          ]}
+        />
         <PageHeader
           title="Nantes en 10 ans"
           subtitle="Évolution de la population et structure par âge d'après les données publiques."
@@ -91,6 +97,11 @@ export default function Nantes10YearsPage() {
   if (error) {
     return (
       <div className="animate-fadeIn">
+        <Breadcrumbs 
+          items={[
+            { label: 'Nantes en 10 ans' }
+          ]}
+        />
         <PageHeader
           title="Nantes en 10 ans"
           subtitle="Évolution de la population et structure par âge d'après les données publiques."
@@ -105,6 +116,11 @@ export default function Nantes10YearsPage() {
   if (populationData.length === 0 && ageGroupsData.length === 0) {
     return (
       <div className="animate-fadeIn">
+        <Breadcrumbs 
+          items={[
+            { label: 'Nantes en 10 ans' }
+          ]}
+        />
         <PageHeader
           title="Nantes en 10 ans"
           subtitle="Évolution de la population et structure par âge d'après les données publiques."
@@ -122,6 +138,13 @@ export default function Nantes10YearsPage() {
 
   return (
     <div className="animate-fadeIn">
+      {/* Breadcrumbs */}
+      <Breadcrumbs 
+        items={[
+          { label: 'Nantes en 10 ans' }
+        ]}
+      />
+      
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <PageHeader
@@ -130,28 +153,34 @@ export default function Nantes10YearsPage() {
         />
       </div>
 
-      {/* KPIs Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard
-          title="Population actuelle"
-          description={
-            latestPopulation
-              ? formatNumberFR(latestPopulation) + ' habitants'
-              : 'Données non disponibles'
-          }
-        />
-        <StatCard
-          title="Évolution sur 10 ans"
-          description={
-            change
-              ? `${change.absolute > 0 ? '+' : ''}${formatNumberFR(change.absolute)} (${formatPercentFR(change.percent / 100, 1)})`
-              : '—'
-          }
-        />
-        <StatCard
-          title="Âge médian"
-          description={medianAge ? `${medianAge.toFixed(1)} ans` : '—'}
-        />
+      {/* KPIs Row - with hover effects */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="transform hover:scale-105 transition-transform duration-300">
+          <StatCard
+            title="Population actuelle"
+            description={
+              latestPopulation
+                ? formatNumberFR(latestPopulation) + ' habitants'
+                : 'Données non disponibles'
+            }
+          />
+        </div>
+        <div className="transform hover:scale-105 transition-transform duration-300 animation-delay-100">
+          <StatCard
+            title="Évolution sur 10 ans"
+            description={
+              change
+                ? `${change.absolute > 0 ? '+' : ''}${formatNumberFR(change.absolute)} (${formatPercentFR(change.percent / 100, 1)})`
+                : '—'
+            }
+          />
+        </div>
+        <div className="transform hover:scale-105 transition-transform duration-300 animation-delay-200">
+          <StatCard
+            title="Âge médian"
+            description={medianAge ? `${medianAge.toFixed(1)} ans` : '—'}
+          />
+        </div>
       </div>
 
       {/* Charts */}

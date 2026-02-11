@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import PageHeader from '../../../components/PageHeader'
 import StatCard from '../../../components/StatCard'
+import Breadcrumbs from '../../../components/Breadcrumbs'
 import InflationLineChart from '../../../components/charts/InflationLineChart'
 import FeltInflationChart from '../../../components/charts/FeltInflationChart'
 import ErrorState from '../../../components/ErrorState'
@@ -76,6 +77,11 @@ export default function CostOfLifePage() {
   if (loading) {
     return (
       <div className="animate-fadeIn">
+        <Breadcrumbs 
+          items={[
+            { label: 'Observatoire du coût de la vie' }
+          ]}
+        />
         <PageHeader
           title="Observatoire du coût de la vie"
           subtitle="Suivez l'évolution de l'inflation officielle et d'un indicateur d'inflation ressentie."
@@ -96,6 +102,11 @@ export default function CostOfLifePage() {
   if (error) {
     return (
       <div className="animate-fadeIn">
+        <Breadcrumbs 
+          items={[
+            { label: 'Observatoire du coût de la vie' }
+          ]}
+        />
         <PageHeader
           title="Observatoire du coût de la vie"
           subtitle="Suivez l'évolution de l'inflation officielle et d'un indicateur d'inflation ressentie."
@@ -110,6 +121,11 @@ export default function CostOfLifePage() {
   if (inflationData.length === 0 && feltData.length === 0) {
     return (
       <div className="animate-fadeIn">
+        <Breadcrumbs 
+          items={[
+            { label: 'Observatoire du coût de la vie' }
+          ]}
+        />
         <PageHeader
           title="Observatoire du coût de la vie"
           subtitle="Suivez l'évolution de l'inflation officielle et d'un indicateur d'inflation ressentie."
@@ -127,26 +143,39 @@ export default function CostOfLifePage() {
 
   return (
     <div className="animate-fadeIn">
+      {/* Breadcrumbs */}
+      <Breadcrumbs 
+        items={[
+          { label: 'Observatoire du coût de la vie' }
+        ]}
+      />
+      
       {/* Header */}
       <PageHeader
         title="Observatoire du coût de la vie"
         subtitle="Suivez l'évolution de l'inflation officielle et d'un indicateur d'inflation ressentie."
       />
 
-      {/* KPIs Row */}
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard
-          title="Inflation actuelle (fév. 2026)"
-          description={formatPercentFR(kpis.latestYoY / 100, 1)}
-        />
-        <StatCard
-          title="Moyenne 12 mois"
-          description={formatPercentFR(kpis.avg12Months / 100, 1)}
-        />
-        <StatCard
-          title="Pic sur 10 ans"
-          description={`${formatPercentFR(kpis.peak10Years / 100, 1)} (${peakDateFormatted})`}
-        />
+      {/* KPIs Row - with hover effects */}
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="transform hover:scale-105 transition-transform duration-300">
+          <StatCard
+            title="Inflation actuelle (fév. 2026)"
+            description={formatPercentFR(kpis.latestYoY / 100, 1)}
+          />
+        </div>
+        <div className="transform hover:scale-105 transition-transform duration-300 animation-delay-100">
+          <StatCard
+            title="Moyenne 12 mois"
+            description={formatPercentFR(kpis.avg12Months / 100, 1)}
+          />
+        </div>
+        <div className="transform hover:scale-105 transition-transform duration-300 animation-delay-200">
+          <StatCard
+            title="Pic sur 10 ans"
+            description={`${formatPercentFR(kpis.peak10Years / 100, 1)} (${peakDateFormatted})`}
+          />
+        </div>
       </div>
 
       {/* Main explanation */}
