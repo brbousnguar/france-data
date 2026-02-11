@@ -24,7 +24,7 @@ export default function Navbar() {
                 : 'text-white hover:text-[#F7B500]'
             }`}
           >
-            France in 10 years
+            France en 10 ans
           </Link>
           <Link 
             href="/nantes-10-years" 
@@ -34,7 +34,7 @@ export default function Navbar() {
                 : 'text-white hover:text-[#F7B500]'
             }`}
           >
-            Nantes in 10 years
+            Nantes en 10 ans
           </Link>
           <Link 
             href="/cost-of-life" 
@@ -44,7 +44,7 @@ export default function Navbar() {
                 : 'text-white hover:text-[#F7B500]'
             }`}
           >
-            Cost of Life
+            Coût de la vie
           </Link>
         </nav>
       </div>

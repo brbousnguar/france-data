@@ -48,8 +48,8 @@ export default function Home() {
           </div>
           <div className="text-center">
             <p className="text-3xl font-bold text-[#333333] mb-1">+ 0,2<sup className="text-xl">%</sup></p>
-            <p className="text-sm text-[#666666] font-medium">Growth</p>
-            <p className="text-xs text-[#999999] mt-1">Q4 2025</p>
+            <p className="text-sm text-[#666666] font-medium">Croissance</p>
+            <p className="text-xs text-[#999999] mt-1">T4 2025</p>
           </div>
         </div>
 
@@ -61,8 +61,8 @@ export default function Home() {
           </div>
           <div className="text-center">
             <p className="text-3xl font-bold text-[#333333] mb-1">7,9<sup className="text-xl">%</sup></p>
-            <p className="text-sm text-[#666666] font-medium">Unemployment</p>
-            <p className="text-xs text-[#999999] mt-1">Q4 2025</p>
+            <p className="text-sm text-[#666666] font-medium">Chômage</p>
+            <p className="text-xs text-[#999999] mt-1">T4 2025</p>
           </div>
         </div>
       </section>

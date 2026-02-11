@@ -7,14 +7,20 @@ import ErrorState from '../../../components/ErrorState'
 import { ChartSkeleton, StatCardSkeleton } from '../../../components/LoadingSkeleton'
 import DownloadButton from '../../../components/DownloadButton'
 import EmptyState from '../../../components/EmptyState'
+import DefinitionTooltip from '../../../components/DefinitionTooltip'
 import {
   getFrancePopulationTimeseries,
   getFranceAgeGroupSharesTimeseries,
   getLatestFrancePopulation,
   calculateFrancePopulationChange,
   calculateFranceMedianAge,
+  getFranceForeignPopulationTimeseries,
+  getFranceTopNationalities,
+  getLatestFranceForeignStats,
   type FrancePopulationPoint,
-  type FranceAgeGroupShares
+  type FranceAgeGroupShares,
+  type FranceNationalityData,
+  type FranceNationalityBreakdown
 } from '../../../lib/franceDemography'
 import { formatNumberFR, formatPercentFR } from '../../../lib/format'
 import { exportTimeseriesCSV } from '../../../lib/csvExport'
@@ -25,9 +31,12 @@ export default function France10YearsPage() {
   const [error, setError] = useState<string | null>(null)
   const [populationData, setPopulationData] = useState<FrancePopulationPoint[]>([])
   const [ageGroupsData, setAgeGroupsData] = useState<FranceAgeGroupShares[]>([])
+  const [foreignData, setForeignData] = useState<FranceNationalityData[]>([])
+  const [nationalitiesData, setNationalitiesData] = useState<FranceNationalityBreakdown[]>([])
   const [latestPopulation, setLatestPopulation] = useState<number | null>(null)
   const [change, setChange] = useState<{ absolute: number; percent: number } | null>(null)
   const [medianAge, setMedianAge] = useState<number | null>(null)
+  const [foreignStats, setForeignStats] = useState<FranceNationalityData | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -43,15 +52,21 @@ export default function France10YearsPage() {
 
       const popData = getFrancePopulationTimeseries()
       const ageData = getFranceAgeGroupSharesTimeseries()
+      const foreignPopData = getFranceForeignPopulationTimeseries()
+      const nationalitiesBreakdown = getFranceTopNationalities()
       const latest = getLatestFrancePopulation()
       const changeData = calculateFrancePopulationChange()
       const median = calculateFranceMedianAge()
+      const latestForeign = getLatestFranceForeignStats()
 
       setPopulationData(popData)
       setAgeGroupsData(ageData)
+      setForeignData(foreignPopData)
+      setNationalitiesData(nationalitiesBreakdown)
       setLatestPopulation(latest)
       setChange(changeData)
       setMedianAge(median)
+      setForeignStats(latestForeign)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load France demographics data')
     } finally {
@@ -303,12 +318,173 @@ export default function France10YearsPage() {
         )}
       </div>
 
+      {/* Foreign Population Section */}
+      <div className="card mt-8">
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-[#333333] mb-1">
+            Population <DefinitionTooltip 
+              term="Étranger" 
+              definition="Personne qui réside en France et ne possède pas la nationalité française, quelle que soit son lieu de naissance."
+            >
+              étrangère
+            </DefinitionTooltip> et <DefinitionTooltip 
+              term="Immigré" 
+              definition="Personne née étrangère à l'étranger et résidant en France. Elle peut avoir acquis la nationalité française ou rester de nationalité étrangère."
+            >
+              immigrée
+            </DefinitionTooltip>
+          </h2>
+          <p className="text-sm text-[#666666]">
+            Évolution de la population de nationalité étrangère en France
+          </p>
+        </div>
+
+        {foreignStats && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#0055A4]">
+              <p className="text-xs text-[#666666] uppercase font-medium mb-1">
+                <DefinitionTooltip 
+                  term="Étranger" 
+                  definition="Personne qui réside en France et ne possède pas la nationalité française."
+                >
+                  Étrangers
+                </DefinitionTooltip> 2025
+              </p>
+              <p className="text-2xl font-bold text-[#333333]">{formatNumberFR(foreignStats.foreigners)}M</p>
+              <p className="text-sm text-[#666666] mt-1">{formatPercentFR(foreignStats.foreignersPercent / 100, 1)} de la population</p>
+            </div>
+            <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#4A90E2]">
+              <p className="text-xs text-[#666666] uppercase font-medium mb-1">
+                <DefinitionTooltip 
+                  term="Immigré" 
+                  definition="Personne née étrangère à l'étranger et résidant en France. Elle peut avoir acquis la nationalité française."
+                >
+                  Immigrés
+                </DefinitionTooltip> 2025
+              </p>
+              <p className="text-2xl font-bold text-[#333333]">{formatNumberFR(foreignStats.immigrants)}M</p>
+              <p className="text-sm text-[#666666] mt-1">{formatPercentFR(foreignStats.immigrantsPercent / 100, 1)} de la population</p>
+            </div>
+            <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#F7B500]">
+              <p className="text-xs text-[#666666] uppercase font-medium mb-1">Croissance étrangers</p>
+              <p className="text-2xl font-bold text-[#333333]">+{formatNumberFR(foreignStats.foreigners - foreignData[0].foreigners)}M</p>
+              <p className="text-sm text-[#666666] mt-1">depuis 2015</p>
+            </div>
+            <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#FF9500]">
+              <p className="text-xs text-[#666666] uppercase font-medium mb-1">Évolution</p>
+              <p className="text-2xl font-bold text-[#333333]">
+                +{formatPercentFR((foreignStats.foreignersPercent - foreignData[0].foreignersPercent) / 100, 1)}
+              </p>
+              <p className="text-sm text-[#666666] mt-1">points en 10 ans</p>
+            </div>
+          </div>
+        )}
+
+        {foreignData.length > 0 && (
+          <ResponsiveContainer width="100%" height={350}>
+            <LineChart data={foreignData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E8E8E8" />
+              <XAxis 
+                dataKey="year" 
+                stroke="#666666"
+                style={{ fontSize: '12px' }}
+              />
+              <YAxis 
+                stroke="#666666"
+                style={{ fontSize: '12px' }}
+                label={{ value: 'Population (M)', angle: -90, position: 'insideLeft', style: { fill: '#666666' } }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'white', 
+                  border: '1px solid #D9D9D9',
+                  borderRadius: '4px'
+                }}
+              />
+              <Legend />
+              <Line 
+                type="monotone" 
+                dataKey="foreigners" 
+                stroke="#0055A4" 
+                strokeWidth={2}
+                dot={{ fill: '#0055A4', r: 3 }}
+                name="Étrangers (millions)"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="immigrants" 
+                stroke="#4A90E2" 
+                strokeWidth={2}
+                dot={{ fill: '#4A90E2', r: 3 }}
+                name="Immigrés (millions)"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* Nationalities Breakdown */}
+      <div className="card mt-8">
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-[#333333] mb-1">
+            Principales nationalités étrangères
+          </h2>
+          <p className="text-sm text-[#666666]">
+            Répartition des étrangers par pays d'origine (2025)
+          </p>
+        </div>
+
+        {nationalitiesData.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b-2 border-[#D9D9D9]">
+                  <th className="text-left py-3 px-2 font-semibold text-[#333333]">Pays</th>
+                  <th className="text-right py-3 px-2 font-semibold text-[#333333]">Population</th>
+                  <th className="text-right py-3 px-2 font-semibold text-[#333333]">% des étrangers</th>
+                  <th className="text-right py-3 px-2 font-semibold text-[#333333]">% population totale</th>
+                </tr>
+              </thead>
+              <tbody>
+                {nationalitiesData.map((item, idx) => (
+                  <tr key={idx} className="border-b border-[#E8E8E8] hover:bg-[#F5F5F5]">
+                    <td className="py-3 px-2 text-[#333333] font-medium">{item.nationality}</td>
+                    <td className="py-3 px-2 text-right text-[#666666]">
+                      {item.nationality === 'Autres' ? 
+                        formatNumberFR(item.population) + ' 000' : 
+                        formatNumberFR(item.population) + ' 000'}
+                    </td>
+                    <td className="py-3 px-2 text-right text-[#666666]">
+                      {formatPercentFR(item.percentOfForeigners / 100, 1)}
+                    </td>
+                    <td className="py-3 px-2 text-right text-[#666666]">
+                      {formatPercentFR(item.percentOfTotal / 100, 1)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       {/* Data Source Note */}
       <div className="mt-6 p-4 bg-[#E8F4FD] border-l-4 border-[#0055A4] rounded">
-        <p className="text-sm text-[#333333]">
+        <p className="text-sm text-[#333333] mb-3">
           <strong>Source :</strong> Institut national de la statistique et des études économiques (INSEE).
           Données de population issues des recensements et estimations officielles.
         </p>
+        <div className="mt-3 pt-3 border-t border-[#0055A4]/20">
+          <p className="text-xs text-[#333333] mb-2"><strong>Définitions :</strong></p>
+          <ul className="text-xs text-[#666666] space-y-1">
+            <li>
+              <strong className="text-[#0055A4]">Étranger :</strong> Personne qui réside en France et ne possède pas la nationalité française, quelle que soit son lieu de naissance (y compris les personnes nées en France).
+            </li>
+            <li>
+              <strong className="text-[#0055A4]">Immigré :</strong> Personne née étrangère à l'étranger et résidant en France. Un immigré peut avoir acquis la nationalité française ou rester de nationalité étrangère. Un immigré n'est pas forcément étranger et réciproquement.
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   )

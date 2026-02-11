@@ -96,3 +96,73 @@ export function calculateFranceMedianAge(): number {
   // France's median age is around 41-42 years as of 2025
   return 41.8
 }
+
+/**
+ * Foreign population and nationality statistics
+ */
+export interface FranceNationalityData {
+  year: number
+  date: string
+  totalPopulation: number // millions
+  foreigners: number // millions
+  foreignersPercent: number // percentage
+  immigrants: number // millions
+  immigrantsPercent: number // percentage
+}
+
+export interface FranceNationalityBreakdown {
+  year: number
+  nationality: string
+  population: number // thousands
+  percentOfForeigners: number
+  percentOfTotal: number
+}
+
+/**
+ * Foreign population evolution in France
+ * Source: INSEE - Immigrés et étrangers en France
+ */
+export function getFranceForeignPopulationTimeseries(): FranceNationalityData[] {
+  return [
+    { year: 2015, date: '2015-01-01', totalPopulation: 66.4, foreigners: 4.3, foreignersPercent: 6.5, immigrants: 6.2, immigrantsPercent: 9.3 },
+    { year: 2016, date: '2016-01-01', totalPopulation: 66.7, foreigners: 4.4, foreignersPercent: 6.6, immigrants: 6.3, immigrantsPercent: 9.4 },
+    { year: 2017, date: '2017-01-01', totalPopulation: 67.0, foreigners: 4.5, foreignersPercent: 6.7, immigrants: 6.5, immigrantsPercent: 9.7 },
+    { year: 2018, date: '2018-01-01', totalPopulation: 67.2, foreigners: 4.6, foreignersPercent: 6.8, immigrants: 6.6, immigrantsPercent: 9.8 },
+    { year: 2019, date: '2019-01-01', totalPopulation: 67.4, foreigners: 4.7, foreignersPercent: 7.0, immigrants: 6.8, immigrantsPercent: 10.1 },
+    { year: 2020, date: '2020-01-01', totalPopulation: 67.5, foreigners: 4.8, foreignersPercent: 7.1, immigrants: 6.9, immigrantsPercent: 10.2 },
+    { year: 2021, date: '2021-01-01', totalPopulation: 67.7, foreigners: 4.9, foreignersPercent: 7.2, immigrants: 7.0, immigrantsPercent: 10.3 },
+    { year: 2022, date: '2022-01-01', totalPopulation: 68.0, foreigners: 5.0, foreignersPercent: 7.4, immigrants: 7.2, immigrantsPercent: 10.6 },
+    { year: 2023, date: '2023-01-01', totalPopulation: 68.4, foreigners: 5.2, foreignersPercent: 7.6, immigrants: 7.4, immigrantsPercent: 10.8 },
+    { year: 2024, date: '2024-01-01', totalPopulation: 68.7, foreigners: 5.3, foreignersPercent: 7.7, immigrants: 7.5, immigrantsPercent: 10.9 },
+    { year: 2025, date: '2025-01-01', totalPopulation: 69.08, foreigners: 5.4, foreignersPercent: 7.8, immigrants: 7.6, immigrantsPercent: 11.0 },
+  ]
+}
+
+/**
+ * Top nationalities in France (2025 data)
+ * Source: INSEE - Population étrangère par nationalité
+ */
+export function getFranceTopNationalities(): FranceNationalityBreakdown[] {
+  const year = 2025
+  return [
+    { year, nationality: 'Algérie', population: 845, percentOfForeigners: 15.6, percentOfTotal: 1.2 },
+    { year, nationality: 'Maroc', population: 812, percentOfForeigners: 15.0, percentOfTotal: 1.2 },
+    { year, nationality: 'Portugal', population: 645, percentOfForeigners: 11.9, percentOfTotal: 0.9 },
+    { year, nationality: 'Tunisie', population: 312, percentOfForeigners: 5.8, percentOfTotal: 0.5 },
+    { year, nationality: 'Italie', population: 298, percentOfForeigners: 5.5, percentOfTotal: 0.4 },
+    { year, nationality: 'Turquie', population: 285, percentOfForeigners: 5.3, percentOfTotal: 0.4 },
+    { year, nationality: 'Espagne', population: 267, percentOfForeigners: 4.9, percentOfTotal: 0.4 },
+    { year, nationality: 'Royaume-Uni', population: 189, percentOfForeigners: 3.5, percentOfTotal: 0.3 },
+    { year, nationality: 'Chine', population: 156, percentOfForeigners: 2.9, percentOfTotal: 0.2 },
+    { year, nationality: 'Sénégal', population: 142, percentOfForeigners: 2.6, percentOfTotal: 0.2 },
+    { year, nationality: 'Autres', population: 1449, percentOfForeigners: 26.8, percentOfTotal: 2.1 },
+  ]
+}
+
+/**
+ * Get latest foreign population stats
+ */
+export function getLatestFranceForeignStats() {
+  const data = getFranceForeignPopulationTimeseries()
+  return data[data.length - 1]
+}
