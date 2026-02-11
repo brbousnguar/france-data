@@ -132,8 +132,8 @@ export default function CostOfLifePage() {
         />
         <div className="mt-6">
           <EmptyState
-            title="No Data Available"
-            message="Inflation data could not be loaded."
+            title="Aucune donnée disponible"
+            message="Les données d'inflation ne peuvent pas être chargées."
             icon="data"
           />
         </div>
@@ -202,7 +202,7 @@ export default function CostOfLifePage() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium">Inflation annuelle (glissement sur 12 mois)</h3>
-              <DownloadButton onClick={handleDownloadInflation} label="Download CSV" />
+              <DownloadButton onClick={handleDownloadInflation} label="Télécharger CSV" />
             </div>
             <InflationLineChart
               data={inflationData}
@@ -212,8 +212,8 @@ export default function CostOfLifePage() {
           </div>
         ) : (
           <EmptyState
-            title="No Inflation Data"
-            message="Official inflation data is not available."
+            title="Aucune donnée d'inflation"
+            message="Les données officielles d'inflation ne sont pas disponibles."
             icon="chart"
           />
         )}
@@ -222,7 +222,7 @@ export default function CostOfLifePage() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium">Inflation officielle vs ressentie</h3>
-              <DownloadButton onClick={handleDownloadFelt} label="Download CSV" />
+              <DownloadButton onClick={handleDownloadFelt} label="Télécharger CSV" />
             </div>
             <FeltInflationChart
               data={feltData}
@@ -232,8 +232,8 @@ export default function CostOfLifePage() {
           </div>
         ) : (
           <EmptyState
-            title="No Felt Inflation Data"
-            message="Felt inflation comparison is not available."
+            title="Aucune donnée d'inflation ressentie"
+            message="La comparaison de l'inflation ressentie n'est pas disponible."
             icon="chart"
           />
         )}
