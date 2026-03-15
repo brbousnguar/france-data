@@ -2,6 +2,7 @@ import '../../styles/globals.css'
 import React from 'react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import GlobalAlertPoller from '../components/GlobalAlertPoller'
 
 export const metadata = {
   title: 'Nantes Public Data Dashboard',
@@ -14,6 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <div className="min-h-screen flex flex-col">
           <Navbar />
+          <GlobalAlertPoller />
           <main className="w-full flex-1 py-8 px-4">
             <div className="container container-max mx-auto">{children}</div>
           </main>

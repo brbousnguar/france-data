@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
+import AlertBadge from './AlertBadge'
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -16,8 +17,8 @@ export default function Navbar() {
           France Public Data Lab
         </Link>
         <nav className="flex items-center space-x-1">
-          <Link 
-            href="/france-10-years" 
+          <Link
+            href="/france-10-years"
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               isActive('/france-10-years')
                 ? 'bg-white text-[#0055A4] rounded'
@@ -26,8 +27,8 @@ export default function Navbar() {
           >
             France en 10 ans
           </Link>
-          <Link 
-            href="/nantes-10-years" 
+          <Link
+            href="/nantes-10-years"
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               isActive('/nantes-10-years')
                 ? 'bg-white text-[#0055A4] rounded'
@@ -36,8 +37,8 @@ export default function Navbar() {
           >
             Nantes en 10 ans
           </Link>
-          <Link 
-            href="/cost-of-life" 
+          <Link
+            href="/cost-of-life"
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               isActive('/cost-of-life')
                 ? 'bg-white text-[#0055A4] rounded'
@@ -45,6 +46,27 @@ export default function Navbar() {
             }`}
           >
             Coût de la vie
+          </Link>
+          <Link
+            href="/purchasing-power"
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              isActive('/purchasing-power')
+                ? 'bg-white text-[#0055A4] rounded'
+                : 'text-white hover:text-[#F7B500]'
+            }`}
+          >
+            Pouvoir d&apos;achat
+          </Link>
+          <Link
+            href="/alerts"
+            className={`px-4 py-2 text-sm font-medium transition-colors flex items-center ${
+              isActive('/alerts')
+                ? 'bg-white text-[#0055A4] rounded'
+                : 'text-white hover:text-[#F7B500]'
+            }`}
+          >
+            Alertes
+            <AlertBadge />
           </Link>
         </nav>
       </div>
