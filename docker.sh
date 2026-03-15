@@ -28,7 +28,7 @@ show_menu() {
 start_prod() {
     echo "🚀 Démarrage en mode production..."
     docker-compose up -d
-    echo "✅ Application démarrée sur http://localhost:3002"
+    echo "✅ Application démarrée sur http://localhost:3000"
 }
 
 # Fonction pour démarrer en développement
@@ -74,7 +74,7 @@ rebuild() {
 open_browser() {
     echo "🌐 Ouverture dans le navigateur..."
     if docker-compose ps | grep -q "france-data-app.*Up"; then
-        open http://localhost:3002
+        open http://localhost:3000
     elif docker-compose -f docker-compose.dev.yml ps | grep -q "france-data-dev.*Up"; then
         open http://localhost:3001
     else
@@ -85,9 +85,9 @@ open_browser() {
 # Fonction pour tester l'API
 test_api() {
     echo "🔍 Test de l'API Health..."
-    if curl -s http://localhost:3002/api/v1/health > /dev/null 2>&1; then
-        echo "✅ Production API (port 3002):"
-        curl -s http://localhost:3002/api/v1/health | jq '.' || curl -s http://localhost:3002/api/v1/health
+    if curl -s http://localhost:3000/api/v1/health > /dev/null 2>&1; then
+        echo "✅ Production API (port 3000):"
+        curl -s http://localhost:3000/api/v1/health | jq '.' || curl -s http://localhost:3000/api/v1/health
     elif curl -s http://localhost:3001/api/v1/health > /dev/null 2>&1; then
         echo "✅ Development API (port 3001):"
         curl -s http://localhost:3001/api/v1/health | jq '.' || curl -s http://localhost:3001/api/v1/health

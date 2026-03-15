@@ -5,13 +5,13 @@
 ### 🎯 Accès à l'application
 
 L'application tourne actuellement en arrière-plan sur :
-**http://localhost:3002**
+**http://localhost:3000**
 
 ### 📋 Commandes Essentielles
 
 #### Démarrage et Arrêt
 ```bash
-# Démarrer en production (port 3002)
+# Démarrer en production (port 3000)
 docker-compose up -d
 
 # Démarrer en développement (port 3001, hot-reload)
@@ -59,7 +59,7 @@ docker-compose restart
 france-data/
 ├── Dockerfile              # Image production (optimisée)
 ├── Dockerfile.dev          # Image développement
-├── docker-compose.yml      # Configuration production (port 3002)
+├── docker-compose.yml      # Configuration production (port 3000)
 ├── docker-compose.dev.yml  # Configuration développement (port 3001)
 ├── .dockerignore          # Fichiers exclus du build
 ├── docker.sh              # Script de gestion (NOUVEAU!)
@@ -69,7 +69,7 @@ france-data/
 ## 🔍 Configuration Actuelle
 
 ### Mode Production (docker-compose.yml)
-- **Port**: 3002 → 3000 (host → container)
+- **Port**: 3000 → 3000 (host → container)
 - **Restart**: unless-stopped (redémarre automatiquement)
 - **Health Check**: Vérifie /api/v1/health toutes les 30s
 - **Build**: Multi-stage (optimisé pour la taille)
@@ -83,7 +83,7 @@ france-data/
 
 ### 1. Tester l'API Health
 ```bash
-curl http://localhost:3002/api/v1/health
+curl http://localhost:3000/api/v1/health
 ```
 
 **Réponse attendue:**
@@ -102,10 +102,10 @@ curl http://localhost:3002/api/v1/health
 ```
 
 ### 2. Tester l'interface web
-Ouvrir dans le navigateur: http://localhost:3002
+Ouvrir dans le navigateur: http://localhost:3000
 
 ### 3. Tester Swagger UI
-http://localhost:3002/api-docs
+http://localhost:3000/api-docs
 
 ## 🚀 Workflows Courants
 
@@ -126,7 +126,7 @@ docker-compose -f docker-compose.dev.yml logs -f
 docker-compose up -d --build
 
 # 2. Vérifier que tout fonctionne
-curl http://localhost:3002/api/v1/health
+curl http://localhost:3000/api/v1/health
 
 # 3. Voir les logs si nécessaire
 docker-compose logs -f
@@ -158,7 +158,7 @@ docker-compose up -d
 ### Port déjà utilisé
 ```bash
 # Trouver le processus
-lsof -i :3002
+lsof -i :3000
 
 # Ou changer le port dans docker-compose.yml
 ports:
@@ -193,7 +193,7 @@ docker-compose logs --tail=50 france-data
 
 ## 🎯 Prochaines Étapes
 
-1. **✅ Application qui tourne** - Votre app tourne sur http://localhost:3002
+1. **✅ Application qui tourne** - Votre app tourne sur http://localhost:3000
 2. **📝 Test** - Testez toutes les fonctionnalités
 3. **🚀 Déploiement** - Utilisez la même config sur un serveur
 4. **🔧 Personnalisation** - Modifiez docker-compose.yml selon vos besoins
@@ -212,4 +212,4 @@ Voir `DOCKER.md` pour plus de détails et d'options avancées.
 
 ---
 
-**Status actuel** : ✅ Application en cours d'exécution sur http://localhost:3002
+**Status actuel** : ✅ Application en cours d'exécution sur http://localhost:3000
