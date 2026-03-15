@@ -251,19 +251,19 @@ export default function PurchasingPowerPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <div className="card border-l-4 border-[#cadf9e]">
             <p className="text-xs text-[#666] uppercase tracking-wide mb-1">Pouvoir d&apos;achat réel</p>
-            <p className="text-2xl font-bold text-[#313628]">{fmt€(kpis.realValueToday)}</p>
+            <p className="text-2xl font-bold text-[#313628]">{fmtEur(kpis.realValueToday)}</p>
             <p className="text-xs text-[#857f74] mt-1">en euros jan. 2022</p>
           </div>
 
           <div className="card border-l-4 border-red-400">
             <p className="text-xs text-[#666] uppercase tracking-wide mb-1">Perte mensuelle</p>
-            <p className="text-2xl font-bold text-red-500">−{fmt€(kpis.monthlyLoss)}</p>
+            <p className="text-2xl font-bold text-red-500">−{fmtEur(kpis.monthlyLoss)}</p>
             <p className="text-xs text-[#857f74] mt-1">vs jan. 2022</p>
           </div>
 
           <div className="card border-l-4 border-red-300">
             <p className="text-xs text-[#666] uppercase tracking-wide mb-1">Perte cumulée</p>
-            <p className="text-2xl font-bold text-red-500">−{fmt€(kpis.cumulativeLoss)}</p>
+            <p className="text-2xl font-bold text-red-500">−{fmtEur(kpis.cumulativeLoss)}</p>
             <p className="text-xs text-[#857f74] mt-1">depuis jan. 2022</p>
           </div>
 
@@ -294,10 +294,10 @@ export default function PurchasingPowerPage() {
           <div className="p-4 bg-[#e5f2d3] border border-[#cadf9e] rounded">
             <p className="text-xs font-semibold text-[#313628] uppercase tracking-wide mb-1">Votre budget alimentation aujourd&apos;hui vaut</p>
             <p className="text-2xl font-bold text-[#4a7c59]">
-              {fmt€(Math.round(profile.foodMonthly / (1 + kpis.foodInflationCumul / 100)))}
+              {fmtEur(Math.round(profile.foodMonthly / (1 + kpis.foodInflationCumul / 100)))}
             </p>
             <p className="text-xs text-[#595358] mt-1">
-              en pouvoir d&apos;achat jan. 2022 (budget nominal : {fmt€(profile.foodMonthly)})
+              en pouvoir d&apos;achat jan. 2022 (budget nominal : {fmtEur(profile.foodMonthly)})
             </p>
           </div>
         </div>
