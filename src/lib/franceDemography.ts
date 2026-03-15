@@ -1,8 +1,12 @@
 /**
  * France National Demographics Data
- * Source: INSEE official publications
- * Data represents France's total population over 10 years
+ * Live data from INSEE Melodi API
  */
+
+import { getCached, setCached } from './cache'
+
+const MELODI_BASE = 'https://api.insee.fr/melodi/data'
+const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
 
 export interface FrancePopulationPoint {
   year: number
@@ -13,66 +17,173 @@ export interface FrancePopulationPoint {
 export interface FranceAgeGroupShares {
   year: number
   date: string
-  '0-19': number    // percentage
-  '20-39': number   // percentage
-  '40-59': number   // percentage
-  '60-74': number   // percentage
-  '75+': number     // percentage
+  '0-24': number   // percentage
+  '25-59': number  // percentage
+  '60-74': number  // percentage
+  '75+': number    // percentage
+}
+
+export interface FranceNationalityData {
+  year: number
+  date: string
+  totalPopulation: number
+  foreigners: number
+  foreignersPercent: number
+  immigrants: number
+  immigrantsPercent: number
+}
+
+export interface FranceNationalityBreakdown {
+  year: number
+  nationality: string
+  population: number
+  percentOfForeigners: number
+  percentOfTotal: number
+}
+
+interface MelodiObservation {
+  dimensions: Record<string, string>
+  measures: Record<string, { value: number | null } | null>
+}
+
+interface MelodiResponse {
+  observations: MelodiObservation[]
+}
+
+function extractMeasureValue(obs: MelodiObservation): number | null {
+  for (const key of Object.keys(obs.measures)) {
+    const measure = obs.measures[key]
+    if (measure && measure.value !== null && measure.value !== undefined) {
+      return measure.value
+    }
+  }
+  return null
+}
+
+async function fetchMelodi(dataset: string, params: string): Promise<MelodiObservation[]> {
+  const url = `${MELODI_BASE}/${dataset}?${params}`
+  const response = await fetch(url, { headers: { Accept: 'application/json' } })
+  if (!response.ok) {
+    throw new Error(`INSEE Melodi API error (${dataset}): ${response.status} ${response.statusText}`)
+  }
+  const json: MelodiResponse = await response.json()
+  return json.observations || []
 }
 
 /**
- * France population time series 2015-2025
- * Source: INSEE official population estimates
+ * France population time series from INSEE Melodi (DS_ESTIMATION_POPULATION)
+ * Returns population in millions
  */
-export function getFrancePopulationTimeseries(): FrancePopulationPoint[] {
-  return [
-    { year: 2015, date: '2015-01-01', population: 66.4 },
-    { year: 2016, date: '2016-01-01', population: 66.7 },
-    { year: 2017, date: '2017-01-01', population: 67.0 },
-    { year: 2018, date: '2018-01-01', population: 67.2 },
-    { year: 2019, date: '2019-01-01', population: 67.4 },
-    { year: 2020, date: '2020-01-01', population: 67.5 },
-    { year: 2021, date: '2021-01-01', population: 67.7 },
-    { year: 2022, date: '2022-01-01', population: 68.0 },
-    { year: 2023, date: '2023-01-01', population: 68.4 },
-    { year: 2024, date: '2024-01-01', population: 68.7 },
-    { year: 2025, date: '2025-01-01', population: 69.08 },
-  ]
+export async function getFrancePopulationTimeseries(): Promise<FrancePopulationPoint[]> {
+  const cacheKey = 'france-population-timeseries'
+  const cached = getCached<FrancePopulationPoint[]>(cacheKey, CACHE_TTL)
+  if (cached) return cached
+
+  const params = 'GEO=2026-FRANCE-F&SEX=_T&AGE=_T&EP_MEASURE=POP_JAN_1ST&FREQ=A&startPeriod=2015&maxResult=20'
+  const observations = await fetchMelodi('DS_ESTIMATION_POPULATION', params)
+
+  const result: FrancePopulationPoint[] = []
+  for (const obs of observations) {
+    const timePeriod = obs.dimensions['TIME_PERIOD']
+    const value = extractMeasureValue(obs)
+    if (timePeriod && value !== null) {
+      const year = parseInt(timePeriod)
+      result.push({
+        year,
+        date: `${year}-01-01`,
+        population: value / 1_000_000,
+      })
+    }
+  }
+
+  result.sort((a, b) => a.year - b.year)
+  setCached(cacheKey, result)
+  return result
 }
 
 /**
- * France age group distribution over time
- * Source: INSEE population structure data
+ * France age group shares timeseries from INSEE Melodi
+ * Groups: 0-24, 25-59, 60-74 (derived as 60+ minus 75+), 75+
  */
-export function getFranceAgeGroupSharesTimeseries(): FranceAgeGroupShares[] {
-  return [
-    { year: 2015, date: '2015-01-01', '0-19': 24.2, '20-39': 25.8, '40-59': 27.1, '60-74': 14.8, '75+': 8.1 },
-    { year: 2016, date: '2016-01-01', '0-19': 24.1, '20-39': 25.6, '40-59': 27.0, '60-74': 15.0, '75+': 8.3 },
-    { year: 2017, date: '2017-01-01', '0-19': 24.0, '20-39': 25.4, '40-59': 26.9, '60-74': 15.2, '75+': 8.5 },
-    { year: 2018, date: '2018-01-01', '0-19': 23.9, '20-39': 25.2, '40-59': 26.7, '60-74': 15.5, '75+': 8.7 },
-    { year: 2019, date: '2019-01-01', '0-19': 23.8, '20-39': 25.0, '40-59': 26.5, '60-74': 15.7, '75+': 9.0 },
-    { year: 2020, date: '2020-01-01', '0-19': 23.7, '20-39': 24.8, '40-59': 26.3, '60-74': 16.0, '75+': 9.2 },
-    { year: 2021, date: '2021-01-01', '0-19': 23.6, '20-39': 24.6, '40-59': 26.0, '60-74': 16.3, '75+': 9.5 },
-    { year: 2022, date: '2022-01-01', '0-19': 23.5, '20-39': 24.4, '40-59': 25.8, '60-74': 16.5, '75+': 9.8 },
-    { year: 2023, date: '2023-01-01', '0-19': 23.4, '20-39': 24.2, '40-59': 25.5, '60-74': 16.8, '75+': 10.1 },
-    { year: 2024, date: '2024-01-01', '0-19': 23.3, '20-39': 24.0, '40-59': 25.2, '60-74': 17.1, '75+': 10.4 },
-    { year: 2025, date: '2025-01-01', '0-19': 23.2, '20-39': 23.8, '40-59': 25.0, '60-74': 17.4, '75+': 10.6 },
-  ]
+export async function getFranceAgeGroupSharesTimeseries(): Promise<FranceAgeGroupShares[]> {
+  const cacheKey = 'france-age-group-shares-timeseries'
+  const cached = getCached<FranceAgeGroupShares[]>(cacheKey, CACHE_TTL)
+  if (cached) return cached
+
+  const baseParams = 'GEO=2026-FRANCE-F&SEX=_T&EP_MEASURE=PT_IN_POP&FREQ=A&startPeriod=2015&maxResult=20'
+
+  const [obsYoung, obsWorking, obsSeniors, obsElderly] = await Promise.all([
+    fetchMelodi('DS_ESTIMATION_POPULATION', `${baseParams}&AGE=Y_LE24`),
+    fetchMelodi('DS_ESTIMATION_POPULATION', `${baseParams}&AGE=Y25T59`),
+    fetchMelodi('DS_ESTIMATION_POPULATION', `${baseParams}&AGE=Y_GE60`),
+    fetchMelodi('DS_ESTIMATION_POPULATION', `${baseParams}&AGE=Y_GE75`),
+  ])
+
+  // Index by year
+  function indexByYear(observations: MelodiObservation[]): Map<number, number> {
+    const map = new Map<number, number>()
+    for (const obs of observations) {
+      const timePeriod = obs.dimensions['TIME_PERIOD']
+      const value = extractMeasureValue(obs)
+      if (timePeriod && value !== null) {
+        map.set(parseInt(timePeriod), value)
+      }
+    }
+    return map
+  }
+
+  const youngMap = indexByYear(obsYoung)
+  const workingMap = indexByYear(obsWorking)
+  const seniorsMap = indexByYear(obsSeniors)
+  const elderlyMap = indexByYear(obsElderly)
+
+  // Collect all years present across all groups
+  const years = new Set<number>([
+    ...youngMap.keys(),
+    ...workingMap.keys(),
+    ...seniorsMap.keys(),
+    ...elderlyMap.keys(),
+  ])
+
+  const result: FranceAgeGroupShares[] = []
+  for (const year of years) {
+    const young = youngMap.get(year) ?? null
+    const working = workingMap.get(year) ?? null
+    const seniorsPlus = seniorsMap.get(year) ?? null
+    const elderlyPlus = elderlyMap.get(year) ?? null
+
+    if (young === null || working === null || seniorsPlus === null || elderlyPlus === null) {
+      continue
+    }
+
+    result.push({
+      year,
+      date: `${year}-01-01`,
+      '0-24': young,
+      '25-59': working,
+      '60-74': seniorsPlus - elderlyPlus,
+      '75+': elderlyPlus,
+    })
+  }
+
+  result.sort((a, b) => a.year - b.year)
+  setCached(cacheKey, result)
+  return result
 }
 
 /**
- * Get latest France population
+ * Get latest France population (in millions)
  */
-export function getLatestFrancePopulation(): number {
-  const data = getFrancePopulationTimeseries()
+export async function getLatestFrancePopulation(): Promise<number> {
+  const data = await getFrancePopulationTimeseries()
   return data[data.length - 1].population
 }
 
 /**
  * Calculate population change over the period
  */
-export function calculateFrancePopulationChange(): { absolute: number; percent: number } {
-  const data = getFrancePopulationTimeseries()
+export async function calculateFrancePopulationChange(): Promise<{ absolute: number; percent: number }> {
+  const data = await getFrancePopulationTimeseries()
   const oldest = data[0].population
   const latest = data[data.length - 1].population
   const absolute = latest - oldest
@@ -81,88 +192,30 @@ export function calculateFrancePopulationChange(): { absolute: number; percent: 
 }
 
 /**
- * Get latest age group snapshot
- */
-export function getLatestFranceAgeSnapshot(): FranceAgeGroupShares | null {
-  const data = getFranceAgeGroupSharesTimeseries()
-  return data[data.length - 1] || null
-}
-
-/**
  * Calculate median age approximation
+ * France's median age is around 41-42 years as of 2025 (static demographic fact)
  */
 export function calculateFranceMedianAge(): number {
-  // Approximate median age based on age group distributions
-  // France's median age is around 41-42 years as of 2025
   return 41.8
 }
 
 /**
- * Foreign population and nationality statistics
- */
-export interface FranceNationalityData {
-  year: number
-  date: string
-  totalPopulation: number // millions
-  foreigners: number // millions
-  foreignersPercent: number // percentage
-  immigrants: number // millions
-  immigrantsPercent: number // percentage
-}
-
-export interface FranceNationalityBreakdown {
-  year: number
-  nationality: string
-  population: number // thousands
-  percentOfForeigners: number
-  percentOfTotal: number
-}
-
-/**
- * Foreign population evolution in France
- * Source: INSEE - Immigrés et étrangers en France
+ * Foreign population timeseries - no live API available for census data
  */
 export function getFranceForeignPopulationTimeseries(): FranceNationalityData[] {
-  return [
-    { year: 2015, date: '2015-01-01', totalPopulation: 66.4, foreigners: 4.3, foreignersPercent: 6.5, immigrants: 6.2, immigrantsPercent: 9.3 },
-    { year: 2016, date: '2016-01-01', totalPopulation: 66.7, foreigners: 4.4, foreignersPercent: 6.6, immigrants: 6.3, immigrantsPercent: 9.4 },
-    { year: 2017, date: '2017-01-01', totalPopulation: 67.0, foreigners: 4.5, foreignersPercent: 6.7, immigrants: 6.5, immigrantsPercent: 9.7 },
-    { year: 2018, date: '2018-01-01', totalPopulation: 67.2, foreigners: 4.6, foreignersPercent: 6.8, immigrants: 6.6, immigrantsPercent: 9.8 },
-    { year: 2019, date: '2019-01-01', totalPopulation: 67.4, foreigners: 4.7, foreignersPercent: 7.0, immigrants: 6.8, immigrantsPercent: 10.1 },
-    { year: 2020, date: '2020-01-01', totalPopulation: 67.5, foreigners: 4.8, foreignersPercent: 7.1, immigrants: 6.9, immigrantsPercent: 10.2 },
-    { year: 2021, date: '2021-01-01', totalPopulation: 67.7, foreigners: 4.9, foreignersPercent: 7.2, immigrants: 7.0, immigrantsPercent: 10.3 },
-    { year: 2022, date: '2022-01-01', totalPopulation: 68.0, foreigners: 5.0, foreignersPercent: 7.4, immigrants: 7.2, immigrantsPercent: 10.6 },
-    { year: 2023, date: '2023-01-01', totalPopulation: 68.4, foreigners: 5.2, foreignersPercent: 7.6, immigrants: 7.4, immigrantsPercent: 10.8 },
-    { year: 2024, date: '2024-01-01', totalPopulation: 68.7, foreigners: 5.3, foreignersPercent: 7.7, immigrants: 7.5, immigrantsPercent: 10.9 },
-    { year: 2025, date: '2025-01-01', totalPopulation: 69.08, foreigners: 5.4, foreignersPercent: 7.8, immigrants: 7.6, immigrantsPercent: 11.0 },
-  ]
+  return []
 }
 
 /**
- * Top nationalities in France (2025 data)
- * Source: INSEE - Population étrangère par nationalité
+ * Top nationalities - no live API available
  */
 export function getFranceTopNationalities(): FranceNationalityBreakdown[] {
-  const year = 2025
-  return [
-    { year, nationality: 'Algérie', population: 845, percentOfForeigners: 15.6, percentOfTotal: 1.2 },
-    { year, nationality: 'Maroc', population: 812, percentOfForeigners: 15.0, percentOfTotal: 1.2 },
-    { year, nationality: 'Portugal', population: 645, percentOfForeigners: 11.9, percentOfTotal: 0.9 },
-    { year, nationality: 'Tunisie', population: 312, percentOfForeigners: 5.8, percentOfTotal: 0.5 },
-    { year, nationality: 'Italie', population: 298, percentOfForeigners: 5.5, percentOfTotal: 0.4 },
-    { year, nationality: 'Turquie', population: 285, percentOfForeigners: 5.3, percentOfTotal: 0.4 },
-    { year, nationality: 'Espagne', population: 267, percentOfForeigners: 4.9, percentOfTotal: 0.4 },
-    { year, nationality: 'Royaume-Uni', population: 189, percentOfForeigners: 3.5, percentOfTotal: 0.3 },
-    { year, nationality: 'Chine', population: 156, percentOfForeigners: 2.9, percentOfTotal: 0.2 },
-    { year, nationality: 'Sénégal', population: 142, percentOfForeigners: 2.6, percentOfTotal: 0.2 },
-    { year, nationality: 'Autres', population: 1449, percentOfForeigners: 26.8, percentOfTotal: 2.1 },
-  ]
+  return []
 }
 
 /**
- * Get latest foreign population stats
+ * Get latest foreign population stats - no live API available
  */
-export function getLatestFranceForeignStats() {
-  const data = getFranceForeignPopulationTimeseries()
-  return data[data.length - 1]
+export function getLatestFranceForeignStats(): FranceNationalityData | null {
+  return null
 }

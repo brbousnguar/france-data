@@ -25,6 +25,7 @@ export default function CostOfLifePage() {
   const [error, setError] = useState<string | null>(null)
   const [inflationData, setInflationData] = useState<InflationPoint[]>([])
   const [feltData, setFeltData] = useState<FeltInflationPoint[]>([])
+  const [latestDate, setLatestDate] = useState<string | null>(null)
   const [kpis, setKpis] = useState<InflationKPIs>({
     latestYoY: 0,
     avg12Months: 0,
@@ -47,6 +48,9 @@ export default function CostOfLifePage() {
       setInflationData(inflData)
       setFeltData(feltInflData)
       setKpis(kpisData)
+      if (inflData.length > 0) {
+        setLatestDate(inflData[inflData.length - 1].date)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data')
     } finally {
@@ -160,7 +164,7 @@ export default function CostOfLifePage() {
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="transform hover:scale-105 transition-transform duration-300">
           <StatCard
-            title="Inflation actuelle (fév. 2026)"
+            title={latestDate ? `Inflation actuelle (${formatDateMonthYearFR(latestDate + '-01')})` : 'Inflation actuelle'}
             description={formatPercentFR(kpis.latestYoY / 100, 1)}
           />
         </div>
@@ -244,7 +248,8 @@ export default function CostOfLifePage() {
         <p className="font-semibold mb-2 text-[#313628]">Sources et méthodologie</p>
         <p className="mb-1">
           <strong>Inflation officielle :</strong> INSEE / Eurostat - Indice des Prix à la Consommation (IPC) harmonisé.
-          Les données affichées sont les valeurs officielles publiées mensuellement (Oct 2022 - Fév 2026).
+          Les données affichées sont les valeurs officielles publiées mensuellement
+          {inflationData.length > 0 && ` (${formatDateMonthYearFR(inflationData[0].date + '-01')} – ${formatDateMonthYearFR(inflationData[inflationData.length - 1].date + '-01')})`}.
           Source : Publications INSEE - Conjoncture mensuelle.
         </p>
         <p className="mb-1">

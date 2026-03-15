@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import axios from 'axios'
 
 /**
  * @swagger
@@ -8,7 +7,7 @@ import axios from 'axios'
  *     tags:
  *       - Population
  *     summary: Get population data for a French commune
- *     description: Fetches population data from INSEE datasets
+ *     description: Fetches current population data from geo.api.gouv.fr
  *     parameters:
  *       - in: path
  *         name: codeCommune
@@ -20,12 +19,12 @@ import axios from 'axios'
  *         name: yearStart
  *         schema:
  *           type: integer
- *         description: Start year
+ *         description: Start year (no effect, only current year data available)
  *       - in: query
  *         name: yearEnd
  *         schema:
  *           type: integer
- *         description: End year
+ *         description: End year (no effect, only current year data available)
  *     responses:
  *       200:
  *         description: Successful response with population data
@@ -60,137 +59,61 @@ export async function GET(
 ) {
   try {
     const codeCommune = params.codeCommune
-    const searchParams = request.nextUrl.searchParams
-    const yearStart = searchParams.get('yearStart')
-    const yearEnd = searchParams.get('yearEnd')
 
-    // Try data.gouv.fr API for population data
-    const apiUrl = `https://geo.api.gouv.fr/communes/${codeCommune}`
-    
-    try {
-      // Fetch commune info
-      const response = await axios.get(apiUrl, {
-        timeout: 5000,
-        headers: {
-          'Accept': 'application/json',
+    const apiUrl = `https://geo.api.gouv.fr/communes/${codeCommune}?fields=population`
+
+    const response = await fetch(apiUrl, {
+      headers: { Accept: 'application/json' },
+    })
+
+    if (response.status === 404) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Commune ${codeCommune} not found`,
         },
-      })
-
-      const communeInfo = response.data
-
-      // Use fallback data for time series (as geo API only provides current population)
-      let timeSeriesData = []
-      
-      if (codeCommune === '44109') {
-        // Nantes - real INSEE data
-        timeSeriesData = [
-          { year: 2013, population: 291604, commune: 'Nantes' },
-          { year: 2014, population: 293589, commune: 'Nantes' },
-          { year: 2015, population: 295672, commune: 'Nantes' },
-          { year: 2016, population: 298029, commune: 'Nantes' },
-          { year: 2017, population: 301392, commune: 'Nantes' },
-          { year: 2018, population: 303382, commune: 'Nantes' },
-          { year: 2019, population: 306694, commune: 'Nantes' },
-          { year: 2020, population: 309346, commune: 'Nantes' },
-          { year: 2021, population: 314138, commune: 'Nantes' },
-          { year: 2022, population: 320732, commune: 'Nantes' },
-          { year: 2023, population: 323204, commune: 'Nantes' },
-          { year: 2024, population: 325800, commune: 'Nantes' },
-        ]
-      } else {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Population time series not available for commune ${codeCommune}`,
-            note: 'Currently only Nantes (44109) is supported',
-          },
-          { status: 404 }
-        )
-      }
-
-      // Apply year filters
-      let filteredData = timeSeriesData
-      if (yearStart) {
-        filteredData = filteredData.filter((item) => item.year >= parseInt(yearStart))
-      }
-      if (yearEnd) {
-        filteredData = filteredData.filter((item) => item.year <= parseInt(yearEnd))
-      }
-
-      return NextResponse.json({
-        success: true,
-        data: filteredData,
-        metadata: {
-          source: 'INSEE / geo.api.gouv.fr',
-          commune: communeInfo.nom,
-          codeCommune: communeInfo.code,
-          count: filteredData.length,
-          filters: {
-            yearStart,
-            yearEnd,
-          },
-        },
-      })
-    } catch (apiError) {
-      console.warn('⚠️  API unavailable, using fallback data')
-      
-      // Fallback without API
-      let timeSeriesData = []
-      let communeName = ''
-      
-      if (codeCommune === '44109') {
-        communeName = 'Nantes'
-        timeSeriesData = [
-          { year: 2013, population: 291604, commune: 'Nantes' },
-          { year: 2014, population: 293589, commune: 'Nantes' },
-          { year: 2015, population: 295672, commune: 'Nantes' },
-          { year: 2016, population: 298029, commune: 'Nantes' },
-          { year: 2017, population: 301392, commune: 'Nantes' },
-          { year: 2018, population: 303382, commune: 'Nantes' },
-          { year: 2019, population: 306694, commune: 'Nantes' },
-          { year: 2020, population: 309346, commune: 'Nantes' },
-          { year: 2021, population: 314138, commune: 'Nantes' },
-          { year: 2022, population: 320732, commune: 'Nantes' },
-          { year: 2023, population: 323204, commune: 'Nantes' },
-          { year: 2024, population: 325800, commune: 'Nantes' },
-        ]
-      } else {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Commune ${codeCommune} not found`,
-          },
-          { status: 404 }
-        )
-      }
-
-      // Apply year filters
-      let filteredData = timeSeriesData
-      if (yearStart) {
-        filteredData = filteredData.filter((item) => item.year >= parseInt(yearStart))
-      }
-      if (yearEnd) {
-        filteredData = filteredData.filter((item) => item.year <= parseInt(yearEnd))
-      }
-
-      return NextResponse.json({
-        success: true,
-        data: filteredData,
-        metadata: {
-          source: 'fallback (INSEE verified data)',
-          commune: communeName,
-          codeCommune,
-          count: filteredData.length,
-          filters: {
-            yearStart,
-            yearEnd,
-          },
-          note: 'API unavailable, using verified INSEE census data',
-        },
-      })
+        { status: 404 }
+      )
     }
+
+    if (!response.ok) {
+      throw new Error(`geo.api.gouv.fr error: ${response.status} ${response.statusText}`)
+    }
+
+    const communeInfo: { nom?: string; code?: string; population?: number } = await response.json()
+
+    if (!communeInfo.population) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `No population data available for commune ${codeCommune}`,
+        },
+        { status: 404 }
+      )
+    }
+
+    const currentYear = new Date().getFullYear()
+    const data = [
+      {
+        year: currentYear,
+        population: communeInfo.population,
+        commune: communeInfo.nom || codeCommune,
+      },
+    ]
+
+    return NextResponse.json({
+      success: true,
+      data,
+      metadata: {
+        source: 'geo.api.gouv.fr',
+        commune: communeInfo.nom,
+        codeCommune: communeInfo.code || codeCommune,
+        count: data.length,
+        note: 'geo.api.gouv.fr provides current population only (no time series)',
+      },
+    })
   } catch (error) {
-    console.error('❌ Error in population API:', error)
+    console.error('Error in population API:', error)
     return NextResponse.json(
       {
         success: false,

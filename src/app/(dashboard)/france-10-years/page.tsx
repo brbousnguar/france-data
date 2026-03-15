@@ -47,15 +47,15 @@ export default function France10YearsPage() {
       setLoading(true)
       setError(null)
 
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 300))
+      const [popData, ageData, latest, changeData] = await Promise.all([
+        getFrancePopulationTimeseries(),
+        getFranceAgeGroupSharesTimeseries(),
+        getLatestFrancePopulation(),
+        calculateFrancePopulationChange(),
+      ])
 
-      const popData = getFrancePopulationTimeseries()
-      const ageData = getFranceAgeGroupSharesTimeseries()
       const foreignPopData = getFranceForeignPopulationTimeseries()
       const nationalitiesBreakdown = getFranceTopNationalities()
-      const latest = getLatestFrancePopulation()
-      const changeData = calculateFrancePopulationChange()
       const median = calculateFranceMedianAge()
       const latestForeign = getLatestFranceForeignStats()
 
@@ -83,12 +83,11 @@ export default function France10YearsPage() {
 
   const handleDownloadAgeGroups = () => {
     exportTimeseriesCSV(
-      ageGroupsData.map(d => ({ 
-        date: d.date, 
-        year: d.year, 
-        '0-19': d['0-19'],
-        '20-39': d['20-39'],
-        '40-59': d['40-59'],
+      ageGroupsData.map(d => ({
+        date: d.date,
+        year: d.year,
+        '0-24': d['0-24'],
+        '25-59': d['25-59'],
         '60-74': d['60-74'],
         '75+': d['75+']
       })),
@@ -99,7 +98,7 @@ export default function France10YearsPage() {
   if (loading) {
     return (
       <div className="animate-fadeIn">
-        <Breadcrumbs 
+        <Breadcrumbs
           items={[
             { label: 'France en 10 ans' }
           ]}
@@ -124,7 +123,7 @@ export default function France10YearsPage() {
   if (error) {
     return (
       <div className="animate-fadeIn">
-        <Breadcrumbs 
+        <Breadcrumbs
           items={[
             { label: 'France en 10 ans' }
           ]}
@@ -143,7 +142,7 @@ export default function France10YearsPage() {
   if (populationData.length === 0 && ageGroupsData.length === 0) {
     return (
       <div className="animate-fadeIn">
-        <Breadcrumbs 
+        <Breadcrumbs
           items={[
             { label: 'France en 10 ans' }
           ]}
@@ -166,12 +165,12 @@ export default function France10YearsPage() {
   return (
     <div className="animate-fadeIn">
       {/* Breadcrumbs */}
-      <Breadcrumbs 
+      <Breadcrumbs
         items={[
           { label: 'France en 10 ans' }
         ]}
       />
-      
+
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <PageHeader
@@ -228,28 +227,28 @@ export default function France10YearsPage() {
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={populationData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E8E8E8" />
-              <XAxis 
-                dataKey="year" 
+              <XAxis
+                dataKey="year"
                 stroke="#666666"
                 style={{ fontSize: '12px' }}
               />
-              <YAxis 
+              <YAxis
                 stroke="#666666"
                 style={{ fontSize: '12px' }}
                 label={{ value: 'Population (M)', angle: -90, position: 'insideLeft', style: { fill: '#666666' } }}
               />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'white',
                   border: '1px solid #D9D9D9',
                   borderRadius: '4px'
                 }}
               />
               <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="population" 
-                stroke="#0055A4" 
+              <Line
+                type="monotone"
+                dataKey="population"
+                stroke="#0055A4"
                 strokeWidth={3}
                 dot={{ fill: '#0055A4', r: 4 }}
                 activeDot={{ r: 6 }}
@@ -284,27 +283,26 @@ export default function France10YearsPage() {
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={ageGroupsData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E8E8E8" />
-              <XAxis 
-                dataKey="year" 
+              <XAxis
+                dataKey="year"
                 stroke="#666666"
                 style={{ fontSize: '12px' }}
               />
-              <YAxis 
+              <YAxis
                 stroke="#666666"
                 style={{ fontSize: '12px' }}
                 label={{ value: 'Pourcentage (%)', angle: -90, position: 'insideLeft', style: { fill: '#666666' } }}
               />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'white',
                   border: '1px solid #D9D9D9',
                   borderRadius: '4px'
                 }}
               />
               <Legend />
-              <Bar dataKey="0-19" stackId="a" fill="#0055A4" name="0-19 ans" />
-              <Bar dataKey="20-39" stackId="a" fill="#4A90E2" name="20-39 ans" />
-              <Bar dataKey="40-59" stackId="a" fill="#F7B500" name="40-59 ans" />
+              <Bar dataKey="0-24" stackId="a" fill="#0055A4" name="0-24 ans" />
+              <Bar dataKey="25-59" stackId="a" fill="#4A90E2" name="25-59 ans" />
               <Bar dataKey="60-74" stackId="a" fill="#FF9500" name="60-74 ans" />
               <Bar dataKey="75+" stackId="a" fill="#FF6B6B" name="75+ ans" />
             </BarChart>
@@ -319,122 +317,122 @@ export default function France10YearsPage() {
       </div>
 
       {/* Foreign Population Section */}
-      <div className="card mt-8">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-[#333333] mb-1">
-            Population <DefinitionTooltip 
-              term="Étranger" 
-              definition="Personne qui réside en France et ne possède pas la nationalité française, quelle que soit son lieu de naissance."
-            >
-              étrangère
-            </DefinitionTooltip> et <DefinitionTooltip 
-              term="Immigré" 
-              definition="Personne née étrangère à l'étranger et résidant en France. Elle peut avoir acquis la nationalité française ou rester de nationalité étrangère."
-            >
-              immigrée
-            </DefinitionTooltip>
-          </h2>
-          <p className="text-sm text-[#666666]">
-            Évolution de la population de nationalité étrangère en France
-          </p>
-        </div>
-
-        {foreignStats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#0055A4]">
-              <p className="text-xs text-[#666666] uppercase font-medium mb-1">
-                <DefinitionTooltip 
-                  term="Étranger" 
-                  definition="Personne qui réside en France et ne possède pas la nationalité française."
-                >
-                  Étrangers
-                </DefinitionTooltip> 2025
-              </p>
-              <p className="text-2xl font-bold text-[#333333]">{formatNumberFR(foreignStats.foreigners)}M</p>
-              <p className="text-sm text-[#666666] mt-1">{formatPercentFR(foreignStats.foreignersPercent / 100, 1)} de la population</p>
-            </div>
-            <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#4A90E2]">
-              <p className="text-xs text-[#666666] uppercase font-medium mb-1">
-                <DefinitionTooltip 
-                  term="Immigré" 
-                  definition="Personne née étrangère à l'étranger et résidant en France. Elle peut avoir acquis la nationalité française."
-                >
-                  Immigrés
-                </DefinitionTooltip> 2025
-              </p>
-              <p className="text-2xl font-bold text-[#333333]">{formatNumberFR(foreignStats.immigrants)}M</p>
-              <p className="text-sm text-[#666666] mt-1">{formatPercentFR(foreignStats.immigrantsPercent / 100, 1)} de la population</p>
-            </div>
-            <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#F7B500]">
-              <p className="text-xs text-[#666666] uppercase font-medium mb-1">Croissance étrangers</p>
-              <p className="text-2xl font-bold text-[#333333]">+{formatNumberFR(foreignStats.foreigners - foreignData[0].foreigners)}M</p>
-              <p className="text-sm text-[#666666] mt-1">depuis 2015</p>
-            </div>
-            <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#FF9500]">
-              <p className="text-xs text-[#666666] uppercase font-medium mb-1">Évolution</p>
-              <p className="text-2xl font-bold text-[#333333]">
-                +{formatPercentFR((foreignStats.foreignersPercent - foreignData[0].foreignersPercent) / 100, 1)}
-              </p>
-              <p className="text-sm text-[#666666] mt-1">points en 10 ans</p>
-            </div>
+      {foreignData.length > 0 && (
+        <div className="card mt-8">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-[#333333] mb-1">
+              Population <DefinitionTooltip
+                term="Étranger"
+                definition="Personne qui réside en France et ne possède pas la nationalité française, quelle que soit son lieu de naissance."
+              >
+                étrangère
+              </DefinitionTooltip> et <DefinitionTooltip
+                term="Immigré"
+                definition="Personne née étrangère à l'étranger et résidant en France. Elle peut avoir acquis la nationalité française ou rester de nationalité étrangère."
+              >
+                immigrée
+              </DefinitionTooltip>
+            </h2>
+            <p className="text-sm text-[#666666]">
+              Évolution de la population de nationalité étrangère en France
+            </p>
           </div>
-        )}
 
-        {foreignData.length > 0 && (
+          {foreignStats !== null && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#0055A4]">
+                <p className="text-xs text-[#666666] uppercase font-medium mb-1">
+                  <DefinitionTooltip
+                    term="Étranger"
+                    definition="Personne qui réside en France et ne possède pas la nationalité française."
+                  >
+                    Étrangers
+                  </DefinitionTooltip> {foreignStats.year}
+                </p>
+                <p className="text-2xl font-bold text-[#333333]">{formatNumberFR(foreignStats.foreigners)}M</p>
+                <p className="text-sm text-[#666666] mt-1">{formatPercentFR(foreignStats.foreignersPercent / 100, 1)} de la population</p>
+              </div>
+              <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#4A90E2]">
+                <p className="text-xs text-[#666666] uppercase font-medium mb-1">
+                  <DefinitionTooltip
+                    term="Immigré"
+                    definition="Personne née étrangère à l'étranger et résidant en France. Elle peut avoir acquis la nationalité française."
+                  >
+                    Immigrés
+                  </DefinitionTooltip> {foreignStats.year}
+                </p>
+                <p className="text-2xl font-bold text-[#333333]">{formatNumberFR(foreignStats.immigrants)}M</p>
+                <p className="text-sm text-[#666666] mt-1">{formatPercentFR(foreignStats.immigrantsPercent / 100, 1)} de la population</p>
+              </div>
+              <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#F7B500]">
+                <p className="text-xs text-[#666666] uppercase font-medium mb-1">Croissance étrangers</p>
+                <p className="text-2xl font-bold text-[#333333]">+{formatNumberFR(foreignStats.foreigners - foreignData[0].foreigners)}M</p>
+                <p className="text-sm text-[#666666] mt-1">depuis {foreignData[0].year}</p>
+              </div>
+              <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#FF9500]">
+                <p className="text-xs text-[#666666] uppercase font-medium mb-1">Évolution</p>
+                <p className="text-2xl font-bold text-[#333333]">
+                  +{formatPercentFR((foreignStats.foreignersPercent - foreignData[0].foreignersPercent) / 100, 1)}
+                </p>
+                <p className="text-sm text-[#666666] mt-1">points en 10 ans</p>
+              </div>
+            </div>
+          )}
+
           <ResponsiveContainer width="100%" height={350}>
             <LineChart data={foreignData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E8E8E8" />
-              <XAxis 
-                dataKey="year" 
+              <XAxis
+                dataKey="year"
                 stroke="#666666"
                 style={{ fontSize: '12px' }}
               />
-              <YAxis 
+              <YAxis
                 stroke="#666666"
                 style={{ fontSize: '12px' }}
                 label={{ value: 'Population (M)', angle: -90, position: 'insideLeft', style: { fill: '#666666' } }}
               />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'white',
                   border: '1px solid #D9D9D9',
                   borderRadius: '4px'
                 }}
               />
               <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="foreigners" 
-                stroke="#0055A4" 
+              <Line
+                type="monotone"
+                dataKey="foreigners"
+                stroke="#0055A4"
                 strokeWidth={2}
                 dot={{ fill: '#0055A4', r: 3 }}
                 name="Étrangers (millions)"
               />
-              <Line 
-                type="monotone" 
-                dataKey="immigrants" 
-                stroke="#4A90E2" 
+              <Line
+                type="monotone"
+                dataKey="immigrants"
+                stroke="#4A90E2"
                 strokeWidth={2}
                 dot={{ fill: '#4A90E2', r: 3 }}
                 name="Immigrés (millions)"
               />
             </LineChart>
           </ResponsiveContainer>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Nationalities Breakdown */}
-      <div className="card mt-8">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-[#333333] mb-1">
-            Principales nationalités étrangères
-          </h2>
-          <p className="text-sm text-[#666666]">
-            Répartition des étrangers par pays d'origine (2025)
-          </p>
-        </div>
+      {nationalitiesData.length > 0 && (
+        <div className="card mt-8">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-[#333333] mb-1">
+              Principales nationalités étrangères
+            </h2>
+            <p className="text-sm text-[#666666]">
+              {nationalitiesData.length > 0 && `Répartition des étrangers par pays d'origine (${nationalitiesData[0].year})`}
+            </p>
+          </div>
 
-        {nationalitiesData.length > 0 && (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -450,9 +448,7 @@ export default function France10YearsPage() {
                   <tr key={idx} className="border-b border-[#E8E8E8] hover:bg-[#F5F5F5]">
                     <td className="py-3 px-2 text-[#333333] font-medium">{item.nationality}</td>
                     <td className="py-3 px-2 text-right text-[#666666]">
-                      {item.nationality === 'Autres' ? 
-                        formatNumberFR(item.population) + ' 000' : 
-                        formatNumberFR(item.population) + ' 000'}
+                      {formatNumberFR(item.population)} 000
                     </td>
                     <td className="py-3 px-2 text-right text-[#666666]">
                       {formatPercentFR(item.percentOfForeigners / 100, 1)}
@@ -465,8 +461,8 @@ export default function France10YearsPage() {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Data Source Note */}
       <div className="mt-6 p-4 bg-[#E8F4FD] border-l-4 border-[#0055A4] rounded">

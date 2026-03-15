@@ -14,11 +14,10 @@ import {
 
 type AgeGroupData = {
   date: string
-  g0_14: number
-  g15_29: number
-  g30_44: number
-  g45_59: number
-  g60plus: number
+  g0_24: number
+  g25_59: number
+  g60_74: number
+  g75plus: number
 }
 
 type Props = {
@@ -27,17 +26,14 @@ type Props = {
 }
 
 export default function AgeGroupsStackedChart({ data, title }: Props) {
-  // Format data for Recharts (convert to percentages for display)
   const chartData = data.map(d => ({
     year: d.date,
-    '0-14 ans': d.g0_14,
-    '15-29 ans': d.g15_29,
-    '30-44 ans': d.g30_44,
-    '45-59 ans': d.g45_59,
-    '60+ ans': d.g60plus
+    '0-24 ans': d.g0_24,
+    '25-59 ans': d.g25_59,
+    '60-74 ans': d.g60_74,
+    '75+ ans': d.g75plus,
   }))
 
-  // Custom tooltip formatter
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload) return null
 
@@ -53,13 +49,11 @@ export default function AgeGroupsStackedChart({ data, title }: Props) {
     )
   }
 
-  // Color palette for age groups - using custom palette with variations
   const colors = {
-    '0-14 ans': '#cadf9e',    // tea-green
-    '15-29 ans': '#a4ac96',   // ash-grey
-    '30-44 ans': '#857f74',   // grey-olive
-    '45-59 ans': '#595358',   // charcoal
-    '60+ ans': '#313628'      // charcoal-brown
+    '0-24 ans': '#cadf9e',   // tea-green
+    '25-59 ans': '#a4ac96',  // ash-grey
+    '60-74 ans': '#857f74',  // grey-olive
+    '75+ ans': '#313628',    // charcoal-brown
   }
 
   return (
@@ -88,11 +82,10 @@ export default function AgeGroupsStackedChart({ data, title }: Props) {
               wrapperStyle={{ paddingTop: '20px' }}
               iconType="square"
             />
-            <Bar dataKey="0-14 ans" stackId="a" fill={colors['0-14 ans']} />
-            <Bar dataKey="15-29 ans" stackId="a" fill={colors['15-29 ans']} />
-            <Bar dataKey="30-44 ans" stackId="a" fill={colors['30-44 ans']} />
-            <Bar dataKey="45-59 ans" stackId="a" fill={colors['45-59 ans']} />
-            <Bar dataKey="60+ ans" stackId="a" fill={colors['60+ ans']} />
+            <Bar dataKey="0-24 ans" stackId="a" fill={colors['0-24 ans']} />
+            <Bar dataKey="25-59 ans" stackId="a" fill={colors['25-59 ans']} />
+            <Bar dataKey="60-74 ans" stackId="a" fill={colors['60-74 ans']} />
+            <Bar dataKey="75+ ans" stackId="a" fill={colors['75+ ans']} />
           </BarChart>
         </ResponsiveContainer>
       </div>

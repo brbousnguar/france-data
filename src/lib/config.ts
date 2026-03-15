@@ -40,9 +40,10 @@ export const CONFIG = {
   /**
    * France inflation (CPI) from INSEE
    * IPC - Indice des prix à la consommation
+   * Dataset: https://www.data.gouv.fr/fr/datasets/6983dff81f90da358ccf74d8/
    */
-  INFLATION_RESOURCE_URL: process.env.FRANCE_INFLATION_URL || 
-    'https://www.data.gouv.fr/fr/datasets/r/eb387048-21d7-4e35-b79e-37f3a58cb93a',
+  INFLATION_RESOURCE_URL: process.env.FRANCE_INFLATION_URL ||
+    'https://www.data.gouv.fr/fr/datasets/r/5961e778-380b-4098-9b7e-33697b44b3c6',
   
   // ==================== Feature Flags ====================
   

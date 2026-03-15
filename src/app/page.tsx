@@ -1,18 +1,169 @@
 import Link from 'next/link'
 import React from 'react'
 
-export default function Home() {
+// ── BDM SDMX XML parser ───────────────────────────────────────────────────────
+function parseBdmLastObs(xml: string): { period: string; value: number } | null {
+  const results: Array<{ period: string; value: number }> = []
+  for (const obsMatch of xml.matchAll(/<Obs\s([^/]*)\//g)) {
+    const attrs: Record<string, string> = {}
+    for (const a of obsMatch[1].matchAll(/(\w+)="([^"]*)"/g)) {
+      attrs[a[1]] = a[2]
+    }
+    if (attrs.TIME_PERIOD && attrs.OBS_VALUE && !isNaN(parseFloat(attrs.OBS_VALUE))) {
+      results.push({ period: attrs.TIME_PERIOD, value: parseFloat(attrs.OBS_VALUE) })
+    }
+  }
+  return results.length > 0 ? results[results.length - 1] : null
+}
+
+// ── Formatters ────────────────────────────────────────────────────────────────
+function formatMonthFR(yyyyMM: string): string {
+  const [year, month] = yyyyMM.split('-')
+  return new Date(parseInt(year), parseInt(month) - 1, 1)
+    .toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+}
+
+function formatQuarterFR(period: string): string {
+  const m = period.match(/(\d{4})-Q(\d)/)
+  return m ? `T${m[2]} ${m[1]}` : period
+}
+
+function formatPopulationM(value: number): string {
+  return (value / 1_000_000).toLocaleString('fr-FR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}
+
+// ── Data fetchers ─────────────────────────────────────────────────────────────
+async function getLatestInflation(): Promise<{ value: number; date: string } | null> {
+  try {
+    const res = await fetch(
+      'https://api.insee.fr/melodi/data/DS_IPC_PRINC?IND_TYPE=YOY&COICOP_2018=00&PRODUCT_GROUP=_Z&FREQ=M&GEO=2025-FRANCE-FM&startPeriod=2022-01&maxResult=100',
+      { headers: { Accept: 'application/json' }, next: { revalidate: 3600 } }
+    )
+    if (!res.ok) return null
+    const json = await res.json()
+    type Obs = { dimensions: Record<string, string>; measures: Record<string, { value: number | null } | null> }
+    const points = (json.observations as Obs[])
+      .map(o => {
+        const date = o.dimensions['TIME_PERIOD']
+        const mk = Object.keys(o.measures)[0]
+        const val = o.measures[mk]?.value ?? null
+        return val !== null ? { date, value: val } : null
+      })
+      .filter((p): p is { date: string; value: number } => p !== null)
+      .sort((a, b) => a.date.localeCompare(b.date))
+    return points[points.length - 1] ?? null
+  } catch { return null }
+}
+
+async function getLatestFrancePopulation(): Promise<{ value: number; year: number } | null> {
+  try {
+    const res = await fetch(
+      'https://api.insee.fr/melodi/data/DS_ESTIMATION_POPULATION?GEO=2026-FRANCE-F&SEX=_T&AGE=_T&EP_MEASURE=POP_JAN_1ST&FREQ=A&startPeriod=2024&maxResult=5',
+      { headers: { Accept: 'application/json' }, next: { revalidate: 86400 } }
+    )
+    if (!res.ok) return null
+    const json = await res.json()
+    type Obs = { dimensions: Record<string, string>; measures: Record<string, { value: number | null } | null> }
+    const points = (json.observations as Obs[])
+      .map(o => {
+        const year = parseInt(o.dimensions['TIME_PERIOD'])
+        const mk = Object.keys(o.measures)[0]
+        const val = o.measures[mk]?.value ?? null
+        return val !== null ? { year, value: val } : null
+      })
+      .filter((p): p is { year: number; value: number } => p !== null)
+      .sort((a, b) => b.year - a.year)
+    return points[0] ?? null
+  } catch { return null }
+}
+
+async function getLatestNantesPopulation(): Promise<number | null> {
+  try {
+    const res = await fetch(
+      'https://geo.api.gouv.fr/communes/44109?fields=population',
+      { next: { revalidate: 86400 } }
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.population ?? null
+  } catch { return null }
+}
+
+async function getLatestUnemployment(): Promise<{ value: number; period: string } | null> {
+  try {
+    const res = await fetch(
+      'https://api.insee.fr/series/BDM/V1/data/SERIES_BDM/001688527?lastNObservations=1',
+      { next: { revalidate: 86400 } }
+    )
+    if (!res.ok) return null
+    const xml = await res.text()
+    const obs = parseBdmLastObs(xml)
+    return obs ? { value: obs.value, period: obs.period } : null
+  } catch { return null }
+}
+
+async function getLatestGDPGrowth(): Promise<{ value: number; period: string } | null> {
+  try {
+    const res = await fetch(
+      'https://api.insee.fr/series/BDM/V1/data/SERIES_BDM/010565692?lastNObservations=1',
+      { next: { revalidate: 86400 } }
+    )
+    if (!res.ok) return null
+    const xml = await res.text()
+    const obs = parseBdmLastObs(xml)
+    return obs ? { value: obs.value, period: obs.period } : null
+  } catch { return null }
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+export default async function Home() {
+  const [inflation, francePopRaw, nantesPopRaw, unemployment, gdp] = await Promise.all([
+    getLatestInflation(),
+    getLatestFrancePopulation(),
+    getLatestNantesPopulation(),
+    getLatestUnemployment(),
+    getLatestGDPGrowth(),
+  ])
+
+  const inflationLabel = inflation
+    ? `+ ${inflation.value.toFixed(1).replace('.', ',')} %`
+    : '—'
+  const inflationDate = inflation ? formatMonthFR(inflation.date) : '—'
+  const inflationShort = inflation
+    ? `${formatMonthFR(inflation.date)} • ${inflation.value.toFixed(1).replace('.', ',')}% actuel`
+    : '—'
+
+  const populationLabel = francePopRaw ? formatPopulationM(francePopRaw.value) : '69,08'
+  const populationYear = francePopRaw ? `France ${francePopRaw.year}` : 'France —'
+
+  const nantesPopLabel = nantesPopRaw
+    ? nantesPopRaw.toLocaleString('fr-FR')
+    : '327 734'
+
+  const unemploymentLabel = unemployment
+    ? `${unemployment.value.toFixed(1).replace('.', ',')} %`
+    : '—'
+  const unemploymentPeriod = unemployment ? formatQuarterFR(unemployment.period) : '—'
+
+  const gdpLabel = gdp
+    ? `${gdp.value >= 0 ? '+ ' : ''}${gdp.value.toFixed(1).replace('.', ',')} %`
+    : '—'
+  const gdpPeriod = gdp ? formatQuarterFR(gdp.period) : '—'
+
   return (
     <div className="space-y-8">
-      {/* Header - INSEE style */}
+      {/* Header */}
       <section className="bg-[#0055A4] text-white py-8 px-6 -mx-6 -mt-6">
         <h1 className="text-3xl font-semibold mb-3 text-white">France Public Data Lab</h1>
         <p className="text-lg text-blue-100">
-          Explorez les données publiques françaises issues des publications officielles de l'INSEE
+          Explorez les données publiques françaises issues des publications officielles de l&apos;INSEE
         </p>
       </section>
 
-      {/* Key Indicators - INSEE Homepage style */}
+      {/* Key Indicators */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Link href="/france-10-years" className="bg-white border border-[#D9D9D9] p-6 hover:shadow-md transition-shadow">
           <div className="text-[#0055A4] text-5xl mb-2">
@@ -21,9 +172,9 @@ export default function Home() {
             </svg>
           </div>
           <div className="text-center">
-            <p className="text-3xl font-bold text-[#333333] mb-1">69,08<sup className="text-lg">M</sup></p>
+            <p className="text-3xl font-bold text-[#333333] mb-1">{populationLabel}<sup className="text-lg">M</sup></p>
             <p className="text-sm text-[#666666] font-medium">Population</p>
-            <p className="text-xs text-[#999999] mt-1">France 2025</p>
+            <p className="text-xs text-[#999999] mt-1">{populationYear}</p>
           </div>
         </Link>
 
@@ -34,9 +185,9 @@ export default function Home() {
             </svg>
           </div>
           <div className="text-center">
-            <p className="text-3xl font-bold text-[#333333] mb-1">+ 0,3<sup className="text-xl">%</sup></p>
+            <p className="text-3xl font-bold text-[#333333] mb-1">{inflationLabel}</p>
             <p className="text-sm text-[#666666] font-medium">Inflation</p>
-            <p className="text-xs text-[#999999] mt-1">Février 2026</p>
+            <p className="text-xs text-[#999999] mt-1">{inflationDate}</p>
           </div>
         </Link>
 
@@ -47,9 +198,9 @@ export default function Home() {
             </svg>
           </div>
           <div className="text-center">
-            <p className="text-3xl font-bold text-[#333333] mb-1">+ 0,2<sup className="text-xl">%</sup></p>
-            <p className="text-sm text-[#666666] font-medium">Croissance</p>
-            <p className="text-xs text-[#999999] mt-1">T4 2025</p>
+            <p className="text-3xl font-bold text-[#333333] mb-1">{gdpLabel}</p>
+            <p className="text-sm text-[#666666] font-medium">Croissance PIB</p>
+            <p className="text-xs text-[#999999] mt-1">{gdpPeriod}</p>
           </div>
         </div>
 
@@ -60,14 +211,14 @@ export default function Home() {
             </svg>
           </div>
           <div className="text-center">
-            <p className="text-3xl font-bold text-[#333333] mb-1">7,9<sup className="text-xl">%</sup></p>
+            <p className="text-3xl font-bold text-[#333333] mb-1">{unemploymentLabel}</p>
             <p className="text-sm text-[#666666] font-medium">Chômage</p>
-            <p className="text-xs text-[#999999] mt-1">T4 2025</p>
+            <p className="text-xs text-[#999999] mt-1">{unemploymentPeriod}</p>
           </div>
         </div>
       </section>
 
-      {/* Latest Publications - INSEE style */}
+      {/* Dashboard cards */}
       <section>
         <div className="flex items-center mb-4">
           <svg className="w-6 h-6 text-[#0055A4] mr-2" fill="currentColor" viewBox="0 0 24 24">
@@ -76,10 +227,7 @@ export default function Home() {
           <h2 className="text-xl font-semibold text-[#333333]">Tableaux de bord disponibles</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Link 
-            href="/france-10-years" 
-            className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center"
-          >
+          <Link href="/france-10-years" className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center">
             <div className="flex-shrink-0 mr-4">
               <div className="w-16 h-16 bg-[#E8F4FD] rounded flex items-center justify-center">
                 <svg className="w-8 h-8 text-[#0055A4]" fill="currentColor" viewBox="0 0 24 24">
@@ -88,14 +236,10 @@ export default function Home() {
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-[#333333] mb-1 group-hover:text-[#0055A4]">
-                France en 10 ans
-              </h3>
-              <p className="text-sm text-[#666666] mb-2">
-                Observatoire démographique national : évolution et projections
-              </p>
+              <h3 className="text-lg font-semibold text-[#333333] mb-1 group-hover:text-[#0055A4]">France en 10 ans</h3>
+              <p className="text-sm text-[#666666] mb-2">Observatoire démographique national : évolution et projections</p>
               <p className="text-xs text-[#999999]">
-                Données 2015-2025 • 69,08M habitants
+                {francePopRaw ? `Données jusqu&apos;en ${francePopRaw.year} • ${populationLabel}M habitants` : 'Données démographiques INSEE'}
               </p>
             </div>
             <svg className="w-5 h-5 text-[#0055A4] flex-shrink-0 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,10 +247,7 @@ export default function Home() {
             </svg>
           </Link>
 
-          <Link 
-            href="/nantes-10-years" 
-            className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center"
-          >
+          <Link href="/nantes-10-years" className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center">
             <div className="flex-shrink-0 mr-4">
               <div className="w-16 h-16 bg-[#E8F4FD] rounded flex items-center justify-center">
                 <svg className="w-8 h-8 text-[#0055A4]" fill="currentColor" viewBox="0 0 24 24">
@@ -115,14 +256,10 @@ export default function Home() {
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-[#333333] mb-1 group-hover:text-[#0055A4]">
-                Nantes en 10 ans
-              </h3>
-              <p className="text-sm text-[#666666] mb-2">
-                Observatoire démographique : population et structure par âge
-              </p>
+              <h3 className="text-lg font-semibold text-[#333333] mb-1 group-hover:text-[#0055A4]">Nantes en 10 ans</h3>
+              <p className="text-sm text-[#666666] mb-2">Observatoire démographique : population et structure par âge</p>
               <p className="text-xs text-[#999999]">
-                Données 2013-2024 • 325 800 habitants
+                {nantesPopRaw ? `Population actuelle • ${nantesPopLabel} habitants` : 'Données démographiques INSEE'}
               </p>
             </div>
             <svg className="w-5 h-5 text-[#0055A4] flex-shrink-0 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,10 +267,7 @@ export default function Home() {
             </svg>
           </Link>
 
-          <Link 
-            href="/cost-of-life" 
-            className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center"
-          >
+          <Link href="/cost-of-life" className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center">
             <div className="flex-shrink-0 mr-4">
               <div className="w-16 h-16 bg-[#E8F4FD] rounded flex items-center justify-center">
                 <svg className="w-8 h-8 text-[#0055A4]" fill="currentColor" viewBox="0 0 24 24">
@@ -142,15 +276,9 @@ export default function Home() {
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-[#333333] mb-1 group-hover:text-[#0055A4]">
-                Observatoire du coût de la vie
-              </h3>
-              <p className="text-sm text-[#666666] mb-2">
-                Inflation officielle et ressentie, tendances sur 10 ans
-              </p>
-              <p className="text-xs text-[#999999]">
-                Février 2026 • 0,3% actuel
-              </p>
+              <h3 className="text-lg font-semibold text-[#333333] mb-1 group-hover:text-[#0055A4]">Observatoire du coût de la vie</h3>
+              <p className="text-sm text-[#666666] mb-2">Inflation officielle et ressentie, tendances sur 10 ans</p>
+              <p className="text-xs text-[#999999]">{inflationShort}</p>
             </div>
             <svg className="w-5 h-5 text-[#0055A4] flex-shrink-0 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

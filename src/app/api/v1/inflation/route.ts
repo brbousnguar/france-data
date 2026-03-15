@@ -1,5 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import axios from 'axios'
+
+const MELODI_BASE = 'https://api.insee.fr/melodi/data'
+
+interface MelodiObservation {
+  dimensions: Record<string, string>
+  measures: Record<string, { value: number | null } | null>
+}
+
+interface MelodiResponse {
+  observations: MelodiObservation[]
+}
+
+function extractMeasureValue(obs: MelodiObservation): number | null {
+  for (const key of Object.keys(obs.measures)) {
+    const measure = obs.measures[key]
+    if (measure && measure.value !== null && measure.value !== undefined) {
+      return measure.value
+    }
+  }
+  return null
+}
 
 /**
  * @swagger
@@ -8,7 +28,7 @@ import axios from 'axios'
  *     tags:
  *       - Inflation
  *     summary: Get French inflation data
- *     description: Fetches inflation data from data.gouv.fr INSEE datasets
+ *     description: Fetches inflation data from INSEE Melodi API (DS_IPC_PRINC)
  *     parameters:
  *       - in: query
  *         name: startDate
@@ -67,101 +87,62 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate')
     const limit = parseInt(searchParams.get('limit') || '100')
 
-    // Try to fetch from data.gouv.fr API
-    // Note: This is a real API endpoint for French inflation data
-    const apiUrl = 'https://www.data.gouv.fr/api/2/datasets/5c34944006e3e73d6f08e20b/resources/'
-    
-    try {
-      // Attempt to fetch from real API
-      const response = await axios.get(apiUrl, {
-        timeout: 5000,
-        headers: {
-          'Accept': 'application/json',
-        },
-      })
+    const params = 'IND_TYPE=YOY&COICOP_2018=00&PRODUCT_GROUP=_Z&FREQ=M&GEO=2025-FRANCE-FM&startPeriod=2022-01&maxResult=100'
+    const url = `${MELODI_BASE}/DS_IPC_PRINC?${params}`
 
-      // Process the response
-      let data = response.data
+    const response = await fetch(url, {
+      headers: { Accept: 'application/json' },
+    })
 
-      // Apply filters
-      if (startDate || endDate) {
-        data = data.filter((item: any) => {
-          const itemDate = new Date(item.date)
-          if (startDate && itemDate < new Date(startDate)) return false
-          if (endDate && itemDate > new Date(endDate)) return false
-          return true
-        })
+    if (!response.ok) {
+      throw new Error(`INSEE Melodi API error: ${response.status} ${response.statusText}`)
+    }
+
+    const json: MelodiResponse = await response.json()
+
+    let data: Array<{ date: string; value: number; indicator: string }> = []
+
+    for (const obs of json.observations) {
+      const timePeriod = obs.dimensions['TIME_PERIOD']
+      const value = extractMeasureValue(obs)
+      if (timePeriod && value !== null) {
+        data.push({ date: timePeriod, value, indicator: 'IPC' })
       }
+    }
 
-      // Apply limit
-      if (limit && data.length > limit) {
-        data = data.slice(0, limit)
-      }
+    // Sort chronologically
+    data.sort((a, b) => a.date.localeCompare(b.date))
 
-      return NextResponse.json({
-        success: true,
-        data,
-        metadata: {
-          source: 'data.gouv.fr',
-          count: data.length,
-          filters: {
-            startDate,
-            endDate,
-            limit,
-          },
-        },
-      })
-    } catch (apiError) {
-      // If real API fails, use fallback hardcoded data
-      console.warn('⚠️  Failed to fetch from data.gouv.fr, using fallback data')
-      
-      const fallbackData = [
-        { date: '2022-10', value: 6.2, indicator: 'IPC' },
-        { date: '2022-11', value: 6.2, indicator: 'IPC' },
-        { date: '2022-12', value: 5.9, indicator: 'IPC' },
-        { date: '2023-01', value: 6.0, indicator: 'IPC' },
-        { date: '2023-12', value: 3.7, indicator: 'IPC' },
-        { date: '2024-01', value: 3.4, indicator: 'IPC' },
-        { date: '2024-12', value: 1.8, indicator: 'IPC' },
-        { date: '2025-12', value: 0.4, indicator: 'IPC' },
-        { date: '2026-01', value: 0.3, indicator: 'IPC' },
-        { date: '2026-02', value: 0.3, indicator: 'IPC' },
-      ]
-
-      let filteredData = fallbackData
-
-      // Apply filters
-      if (startDate || endDate) {
-        filteredData = filteredData.filter((item) => {
-          const itemDate = new Date(item.date + '-01')
-          if (startDate && itemDate < new Date(startDate)) return false
-          if (endDate && itemDate > new Date(endDate)) return false
-          return true
-        })
-      }
-
-      // Apply limit
-      if (limit && filteredData.length > limit) {
-        filteredData = filteredData.slice(0, limit)
-      }
-
-      return NextResponse.json({
-        success: true,
-        data: filteredData,
-        metadata: {
-          source: 'fallback (INSEE verified data)',
-          count: filteredData.length,
-          filters: {
-            startDate,
-            endDate,
-            limit,
-          },
-          note: 'Real API unavailable, using verified INSEE data from official publications',
-        },
+    // Apply date filters
+    if (startDate || endDate) {
+      data = data.filter((item) => {
+        const itemDate = item.date + '-01'
+        if (startDate && itemDate < startDate) return false
+        if (endDate && itemDate > endDate) return false
+        return true
       })
     }
+
+    // Apply limit
+    if (limit && data.length > limit) {
+      data = data.slice(0, limit)
+    }
+
+    return NextResponse.json({
+      success: true,
+      data,
+      metadata: {
+        source: 'INSEE Melodi API (DS_IPC_PRINC)',
+        count: data.length,
+        filters: {
+          startDate,
+          endDate,
+          limit,
+        },
+      },
+    })
   } catch (error) {
-    console.error('❌ Error in inflation API:', error)
+    console.error('Error in inflation API:', error)
     return NextResponse.json(
       {
         success: false,

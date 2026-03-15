@@ -211,18 +211,30 @@ export async function getInflationYoYTimeseries(): Promise<InflationTimeseries> 
   console.log('🔄 Fetching real-time inflation data from INSEE...')
   
   try {
-    // Fetch from INSEE API
-    const data = await fetchINSEEInflation()
-    
+    // Fetch via our server-side API route (avoids browser CORS constraints)
+    const response = await fetch('/api/v1/inflation?limit=100')
+    if (!response.ok) {
+      throw new Error(`Inflation API error: ${response.status} ${response.statusText}`)
+    }
+    const json = await response.json()
+    if (!json.success) {
+      throw new Error(json.error || 'Inflation API returned an error')
+    }
+
+    const rawData = (json.data as Array<{ date: string; value: number }>).map(d => ({
+      date: d.date,
+      value: d.value,
+    }))
+
     // Validate
-    const validated = z.array(InflationPointSchema).parse(data)
-    
+    const validated = z.array(InflationPointSchema).parse(rawData)
+
     console.log(`✅ Fetched ${validated.length} real inflation data points from INSEE`)
-    
+
     // Cache and return
     setCached(cacheKey, validated)
     return validated
-    
+
   } catch (error) {
     console.error('❌ Failed to fetch INSEE inflation data:', error)
     throw new Error('Unable to load real-time inflation data. Please check your internet connection or try again later.')

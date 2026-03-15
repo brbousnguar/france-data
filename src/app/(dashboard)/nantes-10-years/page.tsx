@@ -242,16 +242,17 @@ export default function Nantes10YearsPage() {
       </div>
 
       {/* Foreign Population Section */}
+      {(foreignData.length > 0 || foreignStats !== null) && (
       <div className="card mt-8">
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-[#333333] mb-1">
-            Population <DefinitionTooltip 
-              term="Étranger" 
+            Population <DefinitionTooltip
+              term="Étranger"
               definition="Personne qui réside en France et ne possède pas la nationalité française, quelle que soit son lieu de naissance."
             >
               étrangère
-            </DefinitionTooltip> et <DefinitionTooltip 
-              term="Immigré" 
+            </DefinitionTooltip> et <DefinitionTooltip
+              term="Immigré"
               definition="Personne née étrangère à l'étranger et résidant en France. Elle peut avoir acquis la nationalité française ou rester de nationalité étrangère."
             >
               immigrée
@@ -262,7 +263,7 @@ export default function Nantes10YearsPage() {
           </p>
         </div>
 
-        {foreignStats && (
+        {foreignStats !== null && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#0055A4]">
               <p className="text-xs text-[#666666] uppercase font-medium mb-1">
@@ -271,19 +272,19 @@ export default function Nantes10YearsPage() {
                   definition="Personne qui réside en France et ne possède pas la nationalité française."
                 >
                   Étrangers
-                </DefinitionTooltip> 2024
+                </DefinitionTooltip> {foreignStats.year}
               </p>
               <p className="text-2xl font-bold text-[#333333]">{formatNumberFR(foreignStats.foreigners)}</p>
               <p className="text-sm text-[#666666] mt-1">{formatPercentFR(foreignStats.foreignersPercent / 100, 1)} de la population</p>
             </div>
             <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#4A90E2]">
               <p className="text-xs text-[#666666] uppercase font-medium mb-1">
-                <DefinitionTooltip 
-                  term="Immigré" 
+                <DefinitionTooltip
+                  term="Immigré"
                   definition="Personne née étrangère à l'étranger et résidant en France. Elle peut avoir acquis la nationalité française."
                 >
                   Immigrés
-                </DefinitionTooltip> 2024
+                </DefinitionTooltip> {foreignStats.year}
               </p>
               <p className="text-2xl font-bold text-[#333333]">{formatNumberFR(foreignStats.immigrants)}</p>
               <p className="text-sm text-[#666666] mt-1">{formatPercentFR(foreignStats.immigrantsPercent / 100, 1)} de la population</p>
@@ -291,14 +292,14 @@ export default function Nantes10YearsPage() {
             <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#F7B500]">
               <p className="text-xs text-[#666666] uppercase font-medium mb-1">Croissance étrangers</p>
               <p className="text-2xl font-bold text-[#333333]">+{formatNumberFR(foreignStats.foreigners - foreignData[0].foreigners)}</p>
-              <p className="text-sm text-[#666666] mt-1">depuis 2013</p>
+              <p className="text-sm text-[#666666] mt-1">depuis {foreignData[0].year}</p>
             </div>
             <div className="bg-[#E8F4FD] p-4 rounded border-l-4 border-[#FF9500]">
               <p className="text-xs text-[#666666] uppercase font-medium mb-1">Évolution</p>
               <p className="text-2xl font-bold text-[#333333]">
                 +{formatPercentFR((foreignStats.foreignersPercent - foreignData[0].foreignersPercent) / 100, 1)}
               </p>
-              <p className="text-sm text-[#666666] mt-1">points en 11 ans</p>
+              <p className="text-sm text-[#666666] mt-1">points en {foreignStats.year - foreignData[0].year} ans</p>
             </div>
           </div>
         )}
@@ -345,15 +346,17 @@ export default function Nantes10YearsPage() {
           </ResponsiveContainer>
         )}
       </div>
+      )}
 
       {/* Nationalities Breakdown */}
+      {nationalitiesData.length > 0 && (
       <div className="card mt-8">
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-[#333333] mb-1">
             Principales nationalités étrangères à Nantes
           </h2>
           <p className="text-sm text-[#666666]">
-            Répartition des étrangers par pays d'origine (2024)
+            {nationalitiesData.length > 0 && `Répartition des étrangers par pays d'origine (${nationalitiesData[0].year})`}
           </p>
         </div>
 
@@ -388,6 +391,7 @@ export default function Nantes10YearsPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* Data Source Note */}
       <div className="mt-8 text-xs text-gray-500 border-t pt-4">
@@ -396,7 +400,7 @@ export default function Nantes10YearsPage() {
         </p>
         <p className="mt-1">
           Les données affichées sont issues des publications officielles de l&apos;INSEE. 
-          Population : Recensements 2013-2024 (données certifiées). 
+          Population : geo.api.gouv.fr (données officielles en temps réel). 
           Structure par âge : Pyramide des âges Nantes Métropole (estimations démographiques officielles).
         </p>
         <div className="mt-3 pt-3 border-t border-gray-300">
