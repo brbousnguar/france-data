@@ -158,9 +158,15 @@ export default async function Home() {
       {/* Header */}
       <section className="bg-[#0055A4] text-white py-8 px-6 -mx-6 -mt-6">
         <h1 className="text-3xl font-semibold mb-3 text-white">France Public Data Lab</h1>
-        <p className="text-lg text-blue-100">
+        <p className="text-lg text-blue-100 mb-4">
           Explorez les données publiques françaises issues des publications officielles de l&apos;INSEE
         </p>
+        <Link
+          href="/mon-profil"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#F7B500] text-[#313628] font-semibold rounded hover:bg-[#e5a800] transition-colors text-sm"
+        >
+          <span>→</span> Accéder à Mon Tableau de Bord Personnel
+        </Link>
       </section>
 
       {/* Key Indicators */}
@@ -279,6 +285,24 @@ export default async function Home() {
               <h3 className="text-lg font-semibold text-[#333333] mb-1 group-hover:text-[#0055A4]">Observatoire du coût de la vie</h3>
               <p className="text-sm text-[#666666] mb-2">Inflation officielle et ressentie, tendances sur 10 ans</p>
               <p className="text-xs text-[#999999]">{inflationShort}</p>
+            </div>
+            <svg className="w-5 h-5 text-[#0055A4] flex-shrink-0 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+
+          <Link href="/rates" className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center">
+            <div className="flex-shrink-0 mr-4">
+              <div className="w-16 h-16 bg-[#E8F4FD] rounded flex items-center justify-center">
+                <svg className="w-8 h-8 text-[#0055A4]" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-[#333333] mb-1 group-hover:text-[#0055A4]">Taux d&apos;Intérêt & BCE</h3>
+              <p className="text-sm text-[#666666] mb-2">DFR, OAT 10 ans, Euribor · impact sur épargne, crédit immo et inflation</p>
+              <p className="text-xs text-[#999999]">Données live ECB SDW · Simulateur crédit immobilier Nantes</p>
             </div>
             <svg className="w-5 h-5 text-[#0055A4] flex-shrink-0 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

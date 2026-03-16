@@ -1,105 +1,73 @@
 "use client"
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import React from 'react'
+import React, { useState } from 'react'
 import AlertBadge from './AlertBadge'
+
+const NAV_LINKS = [
+  { href: '/cost-of-life',       label: 'Coût de la vie' },
+  { href: '/purchasing-power',   label: 'Pouvoir d\'achat' },
+  { href: '/personal-inflation', label: 'Mon inflation' },
+  { href: '/rental-market',      label: 'Loyers' },
+  { href: '/rates',              label: 'Taux & BCE' },
+  { href: '/smic-salary',        label: 'SMIC' },
+  { href: '/job-market',         label: 'Emploi Tech' },
+  { href: '/france-10-years',    label: 'France' },
+  { href: '/nantes-10-years',    label: 'Nantes' },
+]
 
 export default function Navbar() {
   const pathname = usePathname()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const isActive = (path: string) => pathname === path
 
   return (
     <header className="bg-[#0055A4] text-white shadow-sm">
-      <div className="container container-max mx-auto px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="text-xl font-semibold text-white hover:text-[#F7B500] transition-colors flex items-center">
-          <span className="mr-2 text-2xl">📊</span>
-          France Public Data Lab
+      <div className="container container-max mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        {/* Brand */}
+        <Link
+          href="/"
+          className="text-lg font-semibold text-white hover:text-[#F7B500] transition-colors flex items-center flex-shrink-0"
+        >
+          <span className="mr-2 text-xl">📊</span>
+          <span className="hidden sm:inline">France Public Data Lab</span>
+          <span className="sm:hidden">FPD Lab</span>
         </Link>
-        <nav className="flex items-center space-x-1">
+
+        {/* Desktop nav */}
+        <nav className="hidden lg:flex items-center gap-0.5 flex-wrap">
+          {/* Mon Profil — primary CTA */}
           <Link
-            href="/france-10-years"
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              isActive('/france-10-years')
-                ? 'bg-white text-[#0055A4] rounded'
-                : 'text-white hover:text-[#F7B500]'
+            href="/mon-profil"
+            className={`px-3 py-2 text-sm font-semibold transition-colors rounded ${
+              isActive('/mon-profil')
+                ? 'bg-[#F7B500] text-[#313628]'
+                : 'bg-white/10 text-[#F7B500] border border-[#F7B500]/50 hover:bg-[#F7B500] hover:text-[#313628]'
             }`}
           >
-            France en 10 ans
+            Mon Profil
           </Link>
-          <Link
-            href="/nantes-10-years"
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              isActive('/nantes-10-years')
-                ? 'bg-white text-[#0055A4] rounded'
-                : 'text-white hover:text-[#F7B500]'
-            }`}
-          >
-            Nantes en 10 ans
-          </Link>
-          <Link
-            href="/cost-of-life"
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              isActive('/cost-of-life')
-                ? 'bg-white text-[#0055A4] rounded'
-                : 'text-white hover:text-[#F7B500]'
-            }`}
-          >
-            Coût de la vie
-          </Link>
-          <Link
-            href="/smic-salary"
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              isActive('/smic-salary')
-                ? 'bg-white text-[#0055A4] rounded'
-                : 'text-white hover:text-[#F7B500]'
-            }`}
-          >
-            SMIC & Salaires
-          </Link>
-          <Link
-            href="/job-market"
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              isActive('/job-market')
-                ? 'bg-white text-[#0055A4] rounded'
-                : 'text-white hover:text-[#F7B500]'
-            }`}
-          >
-            Emploi Tech
-          </Link>
-          <Link
-            href="/personal-inflation"
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              isActive('/personal-inflation')
-                ? 'bg-white text-[#0055A4] rounded'
-                : 'text-white hover:text-[#F7B500]'
-            }`}
-          >
-            Mon Inflation
-          </Link>
-          <Link
-            href="/rental-market"
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              isActive('/rental-market')
-                ? 'bg-white text-[#0055A4] rounded'
-                : 'text-white hover:text-[#F7B500]'
-            }`}
-          >
-            Loyers
-          </Link>
-          <Link
-            href="/purchasing-power"
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              isActive('/purchasing-power')
-                ? 'bg-white text-[#0055A4] rounded'
-                : 'text-white hover:text-[#F7B500]'
-            }`}
-          >
-            Pouvoir d&apos;achat
-          </Link>
+
+          <span className="text-white/30 mx-1">|</span>
+
+          {NAV_LINKS.map(link => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`px-3 py-2 text-sm font-medium transition-colors ${
+                isActive(link.href)
+                  ? 'bg-white text-[#0055A4] rounded'
+                  : 'text-white hover:text-[#F7B500]'
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
+
           <Link
             href="/alerts"
-            className={`px-4 py-2 text-sm font-medium transition-colors flex items-center ${
+            className={`px-3 py-2 text-sm font-medium transition-colors flex items-center ${
               isActive('/alerts')
                 ? 'bg-white text-[#0055A4] rounded'
                 : 'text-white hover:text-[#F7B500]'
@@ -109,8 +77,54 @@ export default function Navbar() {
             <AlertBadge />
           </Link>
         </nav>
+
+        {/* Mobile: Mon Profil + hamburger */}
+        <div className="lg:hidden flex items-center gap-2">
+          <Link
+            href="/mon-profil"
+            className="px-3 py-1.5 text-xs font-semibold bg-[#F7B500] text-[#313628] rounded"
+          >
+            Mon Profil
+          </Link>
+          <Link href="/alerts" className="flex items-center text-white">
+            <span className="text-sm">🔔</span>
+            <AlertBadge />
+          </Link>
+          <button
+            onClick={() => setMenuOpen(o => !o)}
+            className="p-2 text-white hover:text-[#F7B500]"
+            aria-label="Menu"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {menuOpen
+                ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
+            </svg>
+          </button>
+        </div>
       </div>
+
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div className="lg:hidden border-t border-white/20 bg-[#004494]">
+          <nav className="container container-max mx-auto px-4 py-3 grid grid-cols-2 gap-1">
+            {NAV_LINKS.map(link => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMenuOpen(false)}
+                className={`px-3 py-2 text-sm rounded transition-colors ${
+                  isActive(link.href)
+                    ? 'bg-white text-[#0055A4] font-medium'
+                    : 'text-white hover:bg-white/10'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      )}
     </header>
   )
 }
-
