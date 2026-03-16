@@ -48,6 +48,16 @@ export default function Navbar() {
             Coût de la vie
           </Link>
           <Link
+            href="/personal-inflation"
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              isActive('/personal-inflation')
+                ? 'bg-white text-[#0055A4] rounded'
+                : 'text-white hover:text-[#F7B500]'
+            }`}
+          >
+            Mon Inflation
+          </Link>
+          <Link
             href="/rental-market"
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               isActive('/rental-market')

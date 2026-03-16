@@ -285,6 +285,24 @@ export default async function Home() {
             </svg>
           </Link>
 
+          <Link href="/personal-inflation" className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center">
+            <div className="flex-shrink-0 mr-4">
+              <div className="w-16 h-16 bg-[#E8F4FD] rounded flex items-center justify-center">
+                <svg className="w-8 h-8 text-[#0055A4]" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-[#333333] mb-1 group-hover:text-[#0055A4]">Mon Inflation Personnalisée</h3>
+              <p className="text-sm text-[#666666] mb-2">Pondérez l&apos;inflation selon vos dépenses réelles : alimentation, tech, logement</p>
+              <p className="text-xs text-[#999999]">Curseurs ajustables • 7 postes COICOP • Données INSEE</p>
+            </div>
+            <svg className="w-5 h-5 text-[#0055A4] flex-shrink-0 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+
           <Link href="/rental-market" className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center">
             <div className="flex-shrink-0 mr-4">
               <div className="w-16 h-16 bg-[#E8F4FD] rounded flex items-center justify-center">
