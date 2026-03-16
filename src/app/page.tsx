@@ -285,6 +285,24 @@ export default async function Home() {
             </svg>
           </Link>
 
+          <Link href="/rental-market" className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center">
+            <div className="flex-shrink-0 mr-4">
+              <div className="w-16 h-16 bg-[#E8F4FD] rounded flex items-center justify-center">
+                <svg className="w-8 h-8 text-[#0055A4]" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-[#333333] mb-1 group-hover:text-[#0055A4]">Marché Locatif Nantais</h3>
+              <p className="text-sm text-[#666666] mb-2">IRL, plafond légal de hausse de loyer, comparaison marché Nantes</p>
+              <p className="text-xs text-[#999999]">Simulateur de renouvellement de bail • Données INSEE</p>
+            </div>
+            <svg className="w-5 h-5 text-[#0055A4] flex-shrink-0 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+
           <Link href="/purchasing-power" className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center">
             <div className="flex-shrink-0 mr-4">
               <div className="w-16 h-16 bg-[#E8F4FD] rounded flex items-center justify-center">
