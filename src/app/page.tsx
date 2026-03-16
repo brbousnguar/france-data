@@ -285,6 +285,24 @@ export default async function Home() {
             </svg>
           </Link>
 
+          <Link href="/job-market" className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center">
+            <div className="flex-shrink-0 mr-4">
+              <div className="w-16 h-16 bg-[#E8F4FD] rounded flex items-center justify-center">
+                <svg className="w-8 h-8 text-[#0055A4]" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20 6h-2.18c.07-.44.18-.88.18-1.34C18 2.54 15.72.3 12.9.03 11.27-.14 9.8.41 8.68 1.43L7 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm8 8H7v-2c0-2.22 4.44-3 6-3 1.56 0 6 .78 6 3v2z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-[#333333] mb-1 group-hover:text-[#0055A4]">Marché de l&apos;Emploi Tech</h3>
+              <p className="text-sm text-[#666666] mb-2">Salaires MuleSoft/SAP, trajectoire carrière, signaux marché IT et offres d&apos;emploi</p>
+              <p className="text-xs text-[#999999]">Votre profil vs. marché • APEC / DARES / Glassdoor 2024</p>
+            </div>
+            <svg className="w-5 h-5 text-[#0055A4] flex-shrink-0 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+
           <Link href="/personal-inflation" className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center">
             <div className="flex-shrink-0 mr-4">
               <div className="w-16 h-16 bg-[#E8F4FD] rounded flex items-center justify-center">
