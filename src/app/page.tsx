@@ -285,6 +285,24 @@ export default async function Home() {
             </svg>
           </Link>
 
+          <Link href="/smic-salary" className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center">
+            <div className="flex-shrink-0 mr-4">
+              <div className="w-16 h-16 bg-[#E8F4FD] rounded flex items-center justify-center">
+                <svg className="w-8 h-8 text-[#0055A4]" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M7 9H2V7h5v2zm0 3H2v2h5v-2zm13.59 7l-3.83-3.83c-.8.52-1.74.83-2.76.83-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5c0 1.02-.31 1.96-.83 2.75L22 17.59 20.59 19zM17 11c0-1.65-1.35-3-3-3s-3 1.35-3 3 1.35 3 3 3 3-1.35 3-3zM2 19h10v-2H2v2z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-[#333333] mb-1 group-hover:text-[#0055A4]">SMIC & Repères Salariaux</h3>
+              <p className="text-sm text-[#666666] mb-2">Votre multiple SMIC, position vs. médiane cadres IT, convergence salariale</p>
+              <p className="text-xs text-[#999999]">Données INSEE DADS 2022 · APEC 2023 · Journal Officiel SMIC</p>
+            </div>
+            <svg className="w-5 h-5 text-[#0055A4] flex-shrink-0 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+
           <Link href="/job-market" className="group bg-white border border-[#D9D9D9] p-5 hover:shadow-md transition-shadow flex items-center">
             <div className="flex-shrink-0 mr-4">
               <div className="w-16 h-16 bg-[#E8F4FD] rounded flex items-center justify-center">

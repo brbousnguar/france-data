@@ -48,6 +48,16 @@ export default function Navbar() {
             Coût de la vie
           </Link>
           <Link
+            href="/smic-salary"
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              isActive('/smic-salary')
+                ? 'bg-white text-[#0055A4] rounded'
+                : 'text-white hover:text-[#F7B500]'
+            }`}
+          >
+            SMIC & Salaires
+          </Link>
+          <Link
             href="/job-market"
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               isActive('/job-market')
